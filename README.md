@@ -52,5 +52,7 @@ Termos rápidos (o operador é médico, não programador):
 6. **Mostrar TODOS os deals** (aprovados + rejeitados/near-miss), não uma amostra curada.
 
 ⚠️ **Cuidado com a convenção de threshold (pega muita gente):**
-- **MYP** usa **percentual inteiro**: `--threshold 30` = 30%.
-- **CardTrader / COMC / eBay** usam **fração**: `--threshold 0.30` = 30%. No CT, `0.30` e `30` dão resultados absurdamente diferentes (`30` = 3000%, zero deals).
+- **Percentual INTEIRO** (`30` = 30%): **MYP** (`--threshold 30`), **Liga** (`MIN_MARGIN_PERCENT 30`), **eBay** (`min_gross_margin_percent: 30` no `config.yaml`).
+- **Fração** (`0.30` = 30%): **CardTrader** (`--threshold 0.30`), **COMC** (`--min-margin 0.30`), **Selados** (`min_total_margin_pct: 0.30`).
+
+> No CardTrader, `0.30` e `30` dão resultados absurdamente diferentes (`30` = 3000%, zero deals). eBay e Liga **não** têm flag `--threshold`: o limiar mora no `config.yaml`/constante do código.

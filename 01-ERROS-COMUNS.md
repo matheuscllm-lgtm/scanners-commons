@@ -44,7 +44,7 @@ Aparece de jeitos diferentes em cada scanner; é a causa nº1 de "oportunidade" 
 - **Como evita:** na nuvem, usar **tcgcsv.com** como fonte de preço real (MYP já faz via `--tcg-source tcgcsv`; COMC nasceu assim). pokemontcg.io fica pra rodar no PC local.
 
 ## 🟡 9. Confusão de unidade do threshold (fração × percentual)
-- Ver o aviso no [`README.md`](README.md): MYP = inteiro (`30`); CT/COMC/eBay = fração (`0.30`). Errar isso dá "0 deals" ou "tudo é deal".
+- Ver o aviso no [`README.md`](README.md): **inteiro** (`30`) = MYP, Liga, eBay; **fração** (`0.30`) = CardTrader, COMC, Selados. Errar isso dá "0 deals" ou "tudo é deal".
 
 ## 🟢 10. Documentação desatualizada (contagem de testes etc.)
 - **O que é:** o `CLAUDE.md` de cada repo às vezes diz "36 testes" quando já são 50. Confunde quem retoma ("será que faltam testes?").

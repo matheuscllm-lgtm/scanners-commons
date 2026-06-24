@@ -32,8 +32,8 @@ Termos rápidos (o operador é médico, não programador):
 | Scanner | Pasta local | Repo GitHub | Compra (loja) | Referência de preço | Chaves necessárias |
 |---|---|---|---|---|---|
 | **MYP** | `myp-arbitrage-scanner` | `matheuscllm-lgtm/myp-arbitrage-scanner` | MYP Cards (BR, R$) | **tcgcsv.com** (real) → pokemontcg.io → `.estat-tcg` (fallback) | `POKEMONTCG_API_KEY`, `FIRECRAWL_API_KEY` |
-| **CardTrader** | `card-trader-scanner` | `matheuscllm-lgtm/Card-trader-scanner` | CardTrader (Europa, €/US$) | **pokemontcg.io** (+ validação per-blueprint) | `CT_JWT`, `POKEMONTCG_API_KEY` |
-| **Liga** | `liga-pokemon-scanner` | `matheuscllm-lgtm/Liga-cards-scanner` | Liga Pokémon (BR, R$) | **pokemontcg.io** (anônimo) → sets novos via MYP API → PriceCharting | nenhuma p/ CI (coleta ao vivo é headful) |
+| **CardTrader** | `card-trader-scanner` | `matheuscllm-lgtm/Card-trader-scanner` | CardTrader (Europa, €/US$) | **pokemontcg.io** (+ validação per-blueprint) → fallback **tcgcsv.com** (sets sem preço, ex. `asc`) | `CT_JWT`, `POKEMONTCG_API_KEY` |
+| **Liga** | `liga-pokemon-scanner` | `matheuscllm-lgtm/Liga-cards-scanner` | Liga Pokémon (BR, R$) | **pokemontcg.io** (usa `POKEMONTCG_API_KEY` se houver) → sets novos via MYP API → PriceCharting | `POKEMONTCG_API_KEY` (CI mock/offline; coleta ao vivo é headful) |
 | **COMC** | `scanner-comc` | `matheuscllm-lgtm/scanner-comc` | COMC (US, US$) | **tcgcsv.com** (market→mid→low) | `FIRECRAWL_API_KEY` (só nuvem, hoje dormente) |
 | **eBay** | `ebay-arbitrage-scanner` | `matheuscllm-lgtm/ebay-arbitrage-scanner` | eBay (US, US$) | **PriceCharting** (raw + graded) | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` |
 | **Selados** | `sealed-arbitrage-scanner` | `matheuscllm-lgtm/sealed-arbitrage-scanner` | Liga / OLX / Amazon BR / ML | **TCGplayer US** (selado) | `FIRECRAWL_API_KEY` |

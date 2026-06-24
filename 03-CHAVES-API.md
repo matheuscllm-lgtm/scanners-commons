@@ -12,7 +12,7 @@ Conferidas presentes em 2026-06-22:
 
 | Variável | Pra que serve | Usada por |
 |---|---|---|
-| `POKEMONTCG_API_KEY` | preço de referência pokemontcg.io | MYP, CardTrader, (Liga — hoje não lê), local |
+| `POKEMONTCG_API_KEY` | preço de referência pokemontcg.io | MYP, CardTrader, Liga (lê quando presente, PR #30), local |
 | `FIRECRAWL_API_KEY` | scrape robusto (fura WAF, etc.) | MYP (drift), COMC (nuvem), Selados |
 | `OPENAI_API_KEY` | ASI-Evolve / experimentos de LLM | ferramentas auxiliares |
 | `EBAY_CLIENT_ID` | login na eBay Browse API | eBay |
@@ -27,21 +27,29 @@ O CardTrader também lê **`CT_JWT`** (token da API do CardTrader) — fica no a
 
 ---
 
-## (B) No GitHub — secrets por repositório (estado em 2026-06-22)
+## (B) No GitHub — secrets por repositório (estado em 2026-06-24)
+
+Gravados em **Actions E Codespaces** (`--app actions` e `--app codespaces`), todos BOM-safe via `printf '%s'`.
 
 | Repo | Secrets configurados | Observação |
 |---|---|---|
-| `myp-arbitrage-scanner` | `POKEMONTCG_API_KEY`, `FIRECRAWL_API_KEY` | ambos OK; Pokémon resetado limpo (sem BOM) em 22/06 |
+| `myp-arbitrage-scanner` | `POKEMONTCG_API_KEY`, `FIRECRAWL_API_KEY` | Pokémon resetado limpo (sem BOM) em 22/06 |
 | `Card-trader-scanner` | `CT_JWT`, `POKEMONTCG_API_KEY` | Pokémon resetado limpo (sem BOM) em 22/06 |
-| `Liga-cards-scanner` | *(nenhum)* | CI roda em modo mock/offline; coleta ao vivo é só local |
+| `Liga-cards-scanner` | `POKEMONTCG_API_KEY` | CI roda mock/offline, mas a key sobe o limite quando a coleta usa pokemontcg.io |
 | `scanner-comc` | *(nenhum)* | scan na nuvem está dormente; se ligar, precisa `FIRECRAWL_API_KEY` |
-| `ebay-arbitrage-scanner` | *(nenhum)* | CI é offline; chaves eBay ficam só no PC |
+| `ebay-arbitrage-scanner` | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `EBAY_DEV_ID`, `EBAY_ENV`, `EBAY_MARKETPLACE_ID`, `EBAY_SCOPE` | gravadas 24/06; CI é offline (não precisa), mas ficam disponíveis p/ Codespaces e runs na nuvem |
 | `sealed-arbitrage-scanner` | *(nenhum)* | roda local headful; `FIRECRAWL_API_KEY` vem do PC |
+
+Outros repos da frota com `POKEMONTCG_API_KEY` (não são os 6 scanners de cima, mas usam a key): `pokemon-longterm-outlook`, `integrated-scanner`. Os repos da ASI (`asi-evolve`, `asi-main`, `github.com-GAIR-NLP-ASI-Evolve`) têm `ASI_EVOLVE_API_KEY` + `OPENAI_API_KEY` (⏳ falta `OPENAI_BASE_URL`, endpoint real da ASI-Evolve, pra a chave OpenAI roteada funcionar).
+
+⚠️ Esses repos são **públicos** — secret de produção em repo público não vaza em log/PR de fork por padrão, mas considere repos privados pros que guardam chave sensível (eBay PRD, ASI).
 
 Listar/setar secret (sem BOM — ver erro nº1 em [`01-ERROS-COMUNS.md`](01-ERROS-COMUNS.md)):
 ```bash
-gh secret list --repo matheuscllm-lgtm/<repo>
-printf '%s' 'A_CHAVE' | gh secret set NOME --repo matheuscllm-lgtm/<repo>
+gh secret list --repo matheuscllm-lgtm/<repo>                       # Actions
+gh secret list --repo matheuscllm-lgtm/<repo> --app codespaces      # Codespaces
+printf '%s' 'A_CHAVE' | gh secret set NOME --repo matheuscllm-lgtm/<repo>                 # Actions
+printf '%s' 'A_CHAVE' | gh secret set NOME --repo matheuscllm-lgtm/<repo> --app codespaces
 ```
 
 ---
@@ -50,4 +58,4 @@ printf '%s' 'A_CHAVE' | gh secret set NOME --repo matheuscllm-lgtm/<repo>
 1. **Nunca** colar chave dentro do código (hardcode). Sempre ler de variável de ambiente / secret. (Conferido: nenhum dos scanners tem chave hardcoded.)
 2. **Nunca** editar `.env` com o Claude Code observando o terminal (o file-watcher ecoa a credencial). Use confirmação por palavra + smoke sanitizado.
 3. Ao setar secret, **cuidado com BOM** (ver erro nº1). Use `printf '%s'`.
-4. Chave que existe mas o código não usa também é problema (ex.: Liga tem a Pokémon key no PC mas chama a API anônima — perde o limite maior de requisições). Ligar é melhoria de backlog.
+4. Chave que existe mas o código não usa é problema (perde-se o limite maior de requisições). Era o caso da Liga, **já resolvido** (PR #30: passou a mandar `X-Api-Key` quando a key está presente). Ao adicionar uma fonte, confira que a chave dela é de fato lida no código.

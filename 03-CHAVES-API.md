@@ -40,7 +40,7 @@ Gravados em **Actions E Codespaces** (`--app actions` e `--app codespaces`), tod
 | `ebay-arbitrage-scanner` | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `EBAY_DEV_ID`, `EBAY_ENV`, `EBAY_MARKETPLACE_ID`, `EBAY_SCOPE` | gravadas 24/06; CI é offline (não precisa), mas ficam disponíveis p/ Codespaces e runs na nuvem |
 | `sealed-arbitrage-scanner` | *(nenhum)* | roda local headful; `FIRECRAWL_API_KEY` vem do PC |
 
-Outros repos da frota com `POKEMONTCG_API_KEY` (não são os 6 scanners de cima, mas usam a key): `pokemon-longterm-outlook`, `integrated-scanner`. Os repos da ASI (`asi-evolve`, `asi-main`, `github.com-GAIR-NLP-ASI-Evolve`) têm `ASI_EVOLVE_API_KEY` + `OPENAI_API_KEY` (⏳ falta `OPENAI_BASE_URL`, endpoint real da ASI-Evolve, pra a chave OpenAI roteada funcionar).
+Outros repos da frota com `POKEMONTCG_API_KEY` (não são os 6 scanners de cima, mas usam a key): `pokemon-longterm-outlook`, `integrated-scanner`. Os repos da ASI (`asi-evolve`, `asi-main`, `github.com-GAIR-NLP-ASI-Evolve`) têm **só** `OPENAI_API_KEY` (chave OpenAI direta `sk-proj-…`, gerada no platform.openai.com em 24/06; usa o endpoint padrão `api.openai.com/v1` — **sem** `OPENAI_BASE_URL`). O antigo `ASI_EVOLVE_API_KEY` (chave estilo roteador `key_…`) foi removido — não era chave OpenAI.
 
 ⚠️ Esses repos são **públicos** — secret de produção em repo público não vaza em log/PR de fork por padrão, mas considere repos privados pros que guardam chave sensível (eBay PRD, ASI).
 

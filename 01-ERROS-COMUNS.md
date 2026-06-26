@@ -54,12 +54,18 @@ Aparece de jeitos diferentes em cada scanner; é a causa nº1 de "oportunidade" 
 - **O que é:** o CT tem um "run-guard" que **recusa** iniciar se já houver outra instância usando o mesmo `--state-dir`.
 - **Como evita:** use `--state-dir` diferente por run, ou `--allow-concurrent`. Scans longos: rodar em segundo plano (detached), nunca preso numa janela.
 
+## 🟠 12. Entregar resultado fora do modelo-padrão (coluna `Links` incompleta)
+- **O que é:** ao montar a tabela de deals no chat, entregar com **só o link da oferta** (ou colunas de link separadas) em vez da coluna única **`Links` = `[oferta](url) · [TCG](url)`** do modelo MYP. O link de **referência (TCGplayer)** fica de fora → o operador não consegue conferir oferta e preço-âncora lado a lado num clique. Bateu no **CardTrader** em 2026-06-26 (scan vintage): a 1ª entrega saiu com `Link` = só CT, sem o TCG.
+- **Como percebe:** a tabela tem uma coluna `Link`/`Oferta` com um link só, ou duas colunas de link separadas. O modelo correto tem **uma** coluna `Links` com os **dois** hyperlinks juntos.
+- **Como evita:** seguir o [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md) à risca em **toda** entrega de scanner (MYP, CT, Liga, COMC, eBay, Selados, PSA, Integrado): colunas no estilo `# | Margem % | <preço fonte> | TCG | Dif | Carta | Set | Raridade | Cond | Qtd | Links`, onde `Carta` = nome+número e `Links` SEMPRE combina oferta+TCG. Links **lidos do XLSX** (colunas `Link CardTrader` + `Link TCG`), nunca inventados. Entrega = tabela no chat (não arquivo), com **todos** os deals.
+
 ---
 
 ### Padrão por trás de quase tudo acima
-Três famílias de erro respondem pela maioria:
+Quatro famílias de erro respondem pela maioria:
 1. **Higiene de segredo/ambiente** (BOM, billing, key não usada) → "verde mas vazio".
 2. **Higiene de git** (galho/main defasado) → falsa sensação de pendência.
 3. **Honestidade de preço** (inflação, fallback-como-real, NM frouxo) → deal falso.
+4. **Padronização de entrega** (coluna `Links` incompleta, fora do modelo MYP) → triagem mais lenta pro operador.
 
-Se um scan novo der resultado estranho, suspeite primeiro destas três.
+Se um scan novo der resultado estranho, suspeite primeiro das três primeiras; na hora de entregar, confira a quarta.

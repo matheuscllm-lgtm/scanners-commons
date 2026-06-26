@@ -72,5 +72,13 @@ bash tooling/sync-auto-skill.sh
   teste, fallback honesto). E **quando você não dá tarefa**, escolhe sozinho o
   item de maior valor e menor risco do backlog (bug/honestidade primeiro).
 - **PR sem duplicar**: confere se já existe PR pra branch antes de criar.
+- **Quick-ref da frota (§Q)**: uma tabela única com, por scanner, o comando de
+  teste real, a direção do threshold (fração vs inteiro) e se tem lead agent —
+  acelera o pré-voo (o `CLAUDE.md` do repo ainda manda se divergir).
+- **Playbook de fan-out (§4)**: exemplos prontos de "tarefa → plano de agentes"
+  (bug de preço → 3 lentes; set sem cobertura → Explore + 2 fontes; drift →
+  Workflow; auditoria → silent-failure-hunter).
+- **Checklist Definition-of-Done (§5e)**: lista que o assistente marca antes de
+  dizer "pronto" (teste colado? CI verde? preço 2 fontes? segredo varrido?).
 
-*Versão da fonte-mestra: 2026-06-26 (v3 — agente master).*
+*Versão da fonte-mestra: 2026-06-26 (v3.1 — playbook + DoD + quick-ref).*

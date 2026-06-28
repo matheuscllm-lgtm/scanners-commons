@@ -1,130 +1,115 @@
-# HANDOFF — Integração DoubleHolo na frota de scanners
+# HANDOFF — Integração DoubleHolo na frota (RETOMAR AQUI)
 
-> 🔗 **RECONCILIAÇÃO (2026-06-27, sessão paralela):** existe uma 2ª ferramenta em
-> `C:\Users\mathe\doubleholo-scraper\` (HANDOFF.md lá) feita em paralelo. Ela é a
-> **fonte canônica de leitura premium**: raspa o **DOM logado** (console F12),
-> **sem token**, já validada em 5 cartas. **Isso SUPERA a abordagem API+Bearer-token
-> deste tool** (`doubleholo_signals.py`) — o harvest de token é bloqueado pelo
-> classificador (corretamente), e o DOM-scrape não precisa de token. 
-> **Divisão de trabalho:** premium read = JS DOM-scraper (canônico); este lado Python =
-> descoberta headless de `card_id` (Firecrawl) + **glue de pipeline** (juntar sinais
-> aos deals dos scanners / ao outlook), a ser moldado quando o caminho for escolhido.
-> Os 2 backlogs são os mesmos nos 2 docs: (1) 2ª análise de deals, (2) enriquecer outlook.
+**Última sessão:** 2026-06-27 · **Status:** caminhos 3→2→1 implementados, testados e **commitados em branches** (NÃO pushados, NÃO mergeados). Pronto pra revisão/merge ou pra continuar.
 
-**Data:** 2026-06-27 (revisado após investigação ao vivo + reconciliação)
-**Status:** PROTÓTIPO parcial. Descoberta de `card_id` FUNCIONA. Leitura premium → usar o DOM-scraper paralelo (a meia-parte API+token deste tool está SUPERADA).
-**Origem:** operador tem acesso **premium** ao https://doubleholo.com e quer usá-lo pra melhorar resultados da frota.
-**Arquivo do tool:** `~/scanners-commons/tooling/doubleholo_signals.py`
-
-> **CORREÇÃO IMPORTANTE (vs. 1ª versão deste doc):**
-> A ideia **NÃO** é tirar preço/ofertas do DoubleHolo. **Preço de referência continua sendo TCGplayer** (inclusive o próprio DoubleHolo só re-exibe comps do TCGplayer na aba "Market Prices").
-> O alvo é a **camada de ANÁLISE premium**: gem rate / população PSA, recomendação de grading + ROI, forecast/trend, sentimento (Reddit), supply & demand.
-
-> **Glossário** (pro Matheus, médico não-programador):
-> - **Gem rate / gem mint rate** = % das cartas enviadas que voltam PSA 10. É exatamente a "probabilidade de PSA 10" que o scanner PSA usa.
-> - **População (pop)** = quantas cartas já foram gradeadas em cada nota (ex.: 392 em PSA 10).
-> - **Sentiment** = humor da comunidade (Reddit) sobre a carta — sinal de demanda.
-> - **Forecast / trend / RSI** = projeção e indicadores técnicos de para onde o preço vai.
-> - **Bearer token / JWT** = uma "senha temporária" que o site usa pra provar que você está logado.
+> **Em uma frase:** o DoubleHolo (premium) entrega ANÁLISE DE MERCADO (gem rate, população PSA, ROI de gradação, forecast, sinal IA, sentimento) — **não preço** (preço = TCGplayer, já resolvido). Construímos uma coluna "DH" (2ª opinião, nota 0-100) no `pokemon-longterm-outlook` e no `card-trader-scanner`, alimentada por um pipeline canônico, com join determinístico por **productId do TCGplayer**.
 
 ---
 
-## 1. O que o DoubleHolo entrega (e pra quem serve na frota)
+## 0. O que está PRONTO (commitado em branch, sem push)
 
-| Dado DoubleHolo (premium) | Consumidor na frota | Por que importa |
-|---|---|---|
-| **Gem rate (% PSA 10) + População** | **psa-arbitrage** | É literalmente o `--psa10-prob` que o psa-agent recebe de fora hoje. Vira input real, não modelado. |
-| **Recomendação de grading + ROI** (PSA/BGS/CGC/TAG) | **psa-arbitrage** | Cross-check do EV/ROI que o scanner calcula. |
-| **Forecast / trend / RSI** | **pokemon-longterm-outlook** | O `--trend` pendente / 5ª componente do score 0-100. |
-| **Reddit sentiment / menções** | outlook + CT chase-tier | Camada de demanda. |
-| **Supply & demand (eBay)** | outlook | Pressão de oferta. |
-
-**Preço:** NÃO. Fica no TCGplayer (já resolvido na frota — ver `02-REFERENCIAS-E-FALLBACKS.md`).
-
----
-
-## 2. Arquitetura descoberta (investigação ao vivo, DevTools da conta premium)
-
-- **API REST limpa:** `https://api.doubleholo.com/api/v1/`
-- **Endpoint dos sinais premium:** `GET /premium/grading_roi/card/{card_id}`
-  - Devolve o bloco "AI Analysis": grade-rec, melhor grader + ROI, **pop PSA 10**, signal, hold rating.
-- **Order book público:** `GET /market/orders?include_filled=false&card_id={card_id}` (não usamos — é preço).
-- **Telemetria a ignorar:** `doubleholo.com/api/card-data-v2/*` = PostHog (eventos/flags), não é dado de carta.
-- **`card_id`:** descoberto pelo marketplace público (`/marketplace?sets=Pokemon <Set>`) via Firecrawl. **Isto já funciona** no protótipo.
-- **Auth:** **Bearer JWT** guardado no lado-cliente. Sem token → `{"error":"auth_token_missing"}`. Cookie sozinho não basta.
-
-**Campos confirmados na UI premium (Pikachu ex Ascended Heroes #276):**
-pop PSA 10 = **392** · Grade? **Yes** (BGS 10B: 258% ROI) · Signal **Buy** · Hold **Excellent** · Forecast trend **Rising fast** (RSI 73.79; 7‑14d −5%, 30‑60d +5%, 90d+ +5%) · Reddit **Bullish +35**, 122 menções (14d), trend +8.1 · eBay listings +1%/semana.
-
----
-
-## 3. Acesso aos dados premium = DOM-scrape (NÃO token)
-
-Decisão consolidada: a leitura premium é feita pelo **DOM-scraper JS**
-(`~/doubleholo-scraper/doubleholo_scraper.js`), que lê o **DOM já renderizado na
-sua sessão logada** — **sem tocar no token**. Isso evita o harvest de token (que o
-guard do Claude bloqueia, corretamente) e não tem JWT pra expirar/copiar.
-
-- A meia-parte API+`DOUBLEHOLO_TOKEN` deste handoff foi **abandonada** (superada).
-- ⚠️ **ToS:** é a SUA conta premium. Volume baixo, com cache; confirmar uso aceitável
-  antes de automação recorrente (CI).
-
----
-
-## 4. Estado consolidado (caminho 3 ✅ FEITO)
-
-**Duas peças, uma pipeline:**
-
-| Peça | Onde | Papel | Estado |
+| Repo | Branch | Commit | O quê |
 |---|---|---|---|
-| DOM-scraper JS | `~/doubleholo-scraper/doubleholo_scraper.js` | LEITOR premium (console F12) | ✅ pop **corrigida** (sep. milhar "." + leitura DOM); verificado 138/3392/4.1% |
-| Pipeline Python | `~/scanners-commons/tooling/doubleholo_signals.py` | `discover` (card_id via Firecrawl) + `ingest` (JSON→schema canônico) | ✅ testado |
+| `scanners-commons` | `feat/doubleholo-integration` | `0d0b5c0` | pipeline `tooling/doubleholo_signals.py` (discover+ingest, `dh_score` SINGLE SOURCE), testes, este handoff |
+| `pokemon-longterm-outlook` | `feat/doubleholo-dh-column` | `6b26c93` | coluna DH via `--doubleholo`; `outlook/doubleholo.py`; testes |
+| `card-trader-scanner` | `feat/doubleholo-dh-column` | `cee8974` | coluna DH + resolver productId (Fix 1/2); `doubleholo_join.py`, `tcgcsv_productid.py`; testes |
 
-**Schema canônico** (1 registro/carta) — `signals.gem_rate` em FRAÇÃO p/ `psa-arbitrage
---psa10-prob`; `forecast_dir` (buy/sell/neutral) + `best_roi_pct` p/ outlook; flag
-`pop_mismatch` (gem exibido ≠ psa10/total).
+**Testes (todos verdes):** pipeline **8** · outlook **68** · CardTrader **195**.
+**Rodar:** `cd <repo> && PYTHONIOENCODING=utf-8 .venv\Scripts\python.exe -m pytest tests/ -q` (no scanners-commons: `cd tooling && python -m pytest test_doubleholo_signals.py -q`).
 
-**Comandos:**
-```
-python doubleholo_signals.py discover --set "Ascended Heroes" --numbers 276,284
-python doubleholo_signals.py ingest dh_card_1513.json
-python doubleholo_signals.py ingest doubleholo_5cards.json --json
-```
-Windows: prefixar `PYTHONIOENCODING=utf-8` (quirk cp1252, ver `windows_python_setup`).
+**A 4ª peça (NÃO commitada, fica local):** o **DOM-scraper** em `~/doubleholo-scraper/doubleholo_scraper.js` — leitor premium que raspa o DOM logado (sem token). Ver `~/doubleholo-scraper/HANDOFF.md`.
 
 ---
 
-## 5. Próximos passos (ordem do operador: 3 ✅ → 2 ✅ → 1)
+## 1. Arquitetura (as 4 peças e como se ligam)
 
-**Caminho 2 — enriquecer `pokemon-longterm-outlook` ✅ FEITO (como COLUNA, decisão do operador):**
-- Não mexe no score 0–100. Adiciona **uma coluna "DH"** = nota 0-100 (50=neutro) que
-  avalia os dados Double Holo (forecast + sinal IA + ROI gradação + momentum).
-- Calc em `outlook/doubleholo.py` (`dh_score`/`load_signals`/`attach_scores`);
-  flag `--doubleholo dh.json` em `run_outlook.py`; coluna em `report.py` (condicional).
-- **Join determinístico por productId TCGPlayer** (`tcg_product_id` extraído do
-  `reference_url` no pipeline == `card_id` do outlook). Sem matching por nome.
-- Testes: `tests/test_doubleholo.py` (12 casos) — suíte 72 passed / 2 skip.
-- **DESCOBERTA-CHAVE reusável no caminho 1:** o join é por productId, então o
-  matching difuso (nome+set+variante) NÃO é necessário quando a fonte tem o ref TCGplayer.
+```
+[1] DOM-scraper JS (~/doubleholo-scraper/)   →  lê o DOM premium logado (F12), SEM token
+        ↓ baixa JSON cru {cardId,name,number,marketPrice,referenceUrl,premium{...}}
+[2] pipeline (scanners-commons/tooling/doubleholo_signals.py)
+        ingest --json  →  registro CANÔNICO: {tcg_product_id, dh_score, signals{...}}
+        ↓ (dh_score calculado AQUI, single source)
+[3] outlook / [4] CardTrader   →  --doubleholo <json>  →  coluna DH
+        join por productId TCGplayer (tcg_product_id == card_id no outlook /
+        == productId da linha no CT). Determinístico, sem casar por nome.
+```
 
-**Caminho 1 — 2ª análise de deals: IMPLEMENTADO no CardTrader (não commitado), mas join NÃO BINDA ainda.**
-- Feito (working tree CT, via card-agent): `doubleholo_join.py` + flag `--doubleholo` + coluna **DH** no XLSX e markdown (2 links/linha preservados). Testes: 12 novos, suíte CT 184 passed. Lê `dh_score` precomputado.
-- ⚠️ **BLOQUEIO REAL (corrige suposição anterior):** o CT **NÃO** carrega `tcgplayer.com/product/<id>` na saída real (aquilo veio de FIXTURES de teste). Dados reais:
-  - via pokemontcg.io: `Link TCG` = `prices.pokemontcg.io/tcgplayer/{cardId}` (redirect pelo cardId pokemontcg, **sem productId numérico**).
-  - via tcgcsv (fallback ME/asc): `last_tcg_url = None` (vazio).
-  → join por productId casa ~0 linhas hoje (DH = "—"). Implementação correta/honesta; só falta a chave existir na saída.
-- **FIX (1)+(2) IMPLEMENTADOS** (operador aprovou; working tree CT, SEM commit, 195 testes verdes):
-  - **Fix(1)** — `TcgCsvFallbackProvider` agora seta `last_tcg_url = tcgplayer.com/product/{productId}` (pid_index paralelo ao de preço, last-wins). Sets ME/asc passam a ter link TCG (tapa furo do contrato) e casam DH. Não toca preço/margem.
-  - **Fix(2)** — novo `tcgcsv_productid.py`: resolver OFFLINE de productId p/ linhas pokemontcg (índice tcgcsv `{número→{variante→productId}}` por set, reusa mapas de setcode + lógica de variante + unique-match-only). Anti-invenção: ambíguo → `None` (DH="—"). `--no-pid-resolve` desliga; resolver só roda com `--doubleholo`.
-  - `doubleholo_join.attach_scores_df` casa por coluna `tcg_product_id` (fallback: extrai do link).
-  - Numa run modern real: 100% das linhas são redirect pokemontcg → **Fix(2) é o que cobre**; Variant preenchida em 100% (desambiguação tem sinal). % exato de resolução não medível offline.
-- **DECISÕES PENDENTES do operador (design, itens do card-agent):** (1) `[TCG]` continua apontando p/ prices.pokemontcg.io (fluxo de validação) + coluna nova `tcg_product_id` — OU repontar `[TCG]` p/ tcgplayer.com/product; (2) custo de rede do Fix(2) (só com `--doubleholo`); (3) nada commitado.
-- `dh_score` é SINGLE SOURCE no pipeline (`doubleholo_signals.py`); outlook e CT só LEEM.
-- **Loop de uso real:** raspar cards no DoubleHolo (DOM-scraper) → `ingest --json` → rodar CT/outlook `--doubleholo <json>` p/ a coluna DH acender.
+**Decisões de design travadas:**
+- **Preço = TCGplayer.** DoubleHolo NÃO é fonte de preço. O `[TCG]` continua apontando pro `prices.pokemontcg.io` (fluxo de validação do operador) — **opção B confirmada**; productId fica só na coluna própria `tcg_product_id` pro join.
+- **`dh_score` é SINGLE SOURCE no pipeline** (emitido no JSON). Outlook e CT só LEEM (não há fórmula duplicada — removida na revisão).
+- **Coluna DH NÃO entra no score/margem/decisão.** É 2ª opinião à parte. Rodapé sempre diz "não é conselho de compra".
+- **Anti-invenção:** sem productId resolvido → DH "—". Nunca chuta.
 
-**Transversal:**
-6. [ ] Re-raspar `sample_gym_heroes.json` com o scraper corrigido (atual é pré-fix).
-7. [ ] Extrair forecast detalhado + Reddit sentiment no scraper (hoje só `forecast`/AI/ROI/pop).
-8. [ ] Confirmar ToS antes de automação recorrente.
+### Fórmula `dh_score` (0-100, 50=neutro) — em `doubleholo_signals.py`
+```
+base 50
++ forecast_dir : buy +20 · sell -20 · neutral 0
++ ai_signal    : Buy +12 · Sell -12 · Hold 0
++ ai_grade     : Yes +8 · Maybe +4
++ best_roi_pct : ≥300 +10 · ≥150 +7 · ≥50 +4
++ price_change : ≥+10% +8 · >0 +4 · ≤-10% -8 · <0 -4
+→ clamp 0-100. Sem sinal utilizável → None ("—").
+```
 
-**Memórias relacionadas:** `doubleholo_scraper_tool` (leitor JS), `psa_agent_scope_boundary` (PSA consome `--psa10-prob`), `pokemon_longterm_outlook_location` (`--trend` pendente), `feedback_delivery_myp_table_model`, `firecrawl_api_key_setup`, `scanners_commons_folder`, `windows_python_setup`.
+---
+
+## 2. Loop de uso REAL (como acender a coluna DH)
+
+1. **Raspar** os cards no DoubleHolo logado (Chrome): abrir `/card/<id>`, F12 → Console → colar `doubleholo_scraper.js` → `await dhCard()` por card (ou navegar e rodar a extração; ver snippet no §6). Junta num JSON array.
+2. **Ingest:** `cd ~/scanners-commons/tooling && python doubleholo_signals.py ingest raw.json --json > canon.json`
+3. **Rodar com a coluna DH:**
+   - Outlook: `.venv\Scripts\python.exe run_outlook.py --eras "Mega Evolution" --doubleholo canon.json --max-price 2000` (⚠ join SÓ funciona com `--source tcgcsv`, o default).
+   - CardTrader: `cardtrader_postprocess.py --input scan.xlsx --output rel.xlsx --doubleholo canon.json`
+
+**Validação feita (2026-06-27):** 3 cards reais de Ascended Heroes (Pikachu #276 DH=85, Mega Gengar #284 DH=100, Lillie's Clefairy #280 DH=100) casaram 3/3 por productId no outlook; cards-irmãos (#277, #269) ficaram "—" corretamente (precisão do join). Artefatos: `~/.claude/jobs/<job>/tmp/dh_ascended_{raw,canon}.json` (efêmeros).
+
+---
+
+## 3. PRÓXIMOS PASSOS (o que falta)
+
+**Imediato (decisão do operador):**
+1. [ ] **Push + PR das 3 branches?** (ainda não pushadas.) Convenção CT = branch+PR. Se OK, push e abrir 3 PRs com resumo do review.
+2. [ ] **Cobertura real do join no CT:** numa run modern, 100% das linhas vêm via pokemontcg (redirect, sem productId) → dependem do **resolver offline Fix(2)**. Falta medir a % real de resolução numa run ao vivo (precisa chamada tcgcsv online). Os sets de fallback tcgcsv (ME/asc) casam direto via Fix(1).
+
+**Follow-ups menores (anotados na revisão, não bloqueiam):**
+3. [ ] `_pct` exige `%` literal — se o scraper algum dia emitir número puro, sinal some calado (hoje emite "%", OK).
+4. [ ] `attach_product_ids` roda I/O por linha (inclui NAO) em `--all-sets` — gatear pras linhas que viram deal.
+5. [ ] contagem "N casaram" inclui `dh_score=None` (telemetria infla; cosmético).
+
+**Expansões possíveis (caminho 1 além do CT):**
+6. [ ] Levar a coluna DH a outros scanners (MYP/Liga/integrated). MYP/Liga hoje só têm redirect `prices.pokemontcg.io/tcgplayer/{cardId}` (sem productId) → precisariam da mesma ponte tcgcsv (cardId→productId) que o CT já tem em `tcgcsv_productid.py`.
+7. [ ] Alimentar o **psa-arbitrage** com o `gem_rate` (= `--psa10-prob`) — o uso original mais valioso pro PSA. O pipeline já entrega `signals.gem_rate` (fração). Falta o adapter no psa-agent (ver `psa_agent_scope_boundary`).
+8. [ ] Extrair mais sinais no scraper: forecast detalhado (7-14/30-60/90d, RSI), Reddit sentiment (Bullish +35, menções), supply&demand eBay — hoje só pega forecast direcional/AI/ROI/pop.
+
+---
+
+## 4. APRENDIZADOS-CHAVE (não repetir / não re-descobrir)
+
+- **Acesso premium = DOM-scrape, NUNCA harvest de token.** A API `api.doubleholo.com/api/v1/` usa Bearer JWT; tentar extrair o token do localStorage é **bloqueado pelo classificador (corretamente)**. O DOM-scraper lê a tela renderizada da sessão logada — não precisa de token.
+- **População PSA: `.` é separador de MILHAR** no site (`3.392` = 3392). Ler a GRADE do DOM (rótulo→valor irmão), não regex de innerText. (Bug já corrigido no scraper.)
+- **Join SÓ por productId** (determinístico). productId vem do `reference_url` do DoubleHolo (`tcgplayer.com/product/<id>`) == `card_id` do outlook (fonte tcgcsv) / coluna `tcg_product_id` no CT. **Nunca casar por nome** (irmãos #276 vs #277 colidiriam).
+- **CT real NÃO tinha productId na saída** (era suposição de fixtures): pokemontcg → redirect sem id; tcgcsv → vazio. Fix(1) (tcgcsv emite product URL) + Fix(2) (resolver offline pokemontcg) resolveram. productId é **só identidade p/ link/join — nunca toca preço/margem**.
+- **Achado de review #2 era falso-positivo:** `_pid_index` e `_set_index` são last-wins na MESMA iteração → o `[TCG]` aponta sempre pro produto precificado. Não "consertar".
+- **Windows cp1252:** todo entry-point que imprime não-ascii (⚠/→/emoji) precisa do guard `sys.stdout.reconfigure(utf-8)` (ver `windows_python_setup`).
+- **Outlook join só com `--source tcgcsv`** (lá `card_id`=productId). Com `--source ptcg` o id é `sv1-25` → casa 0 (agora avisa).
+
+---
+
+## 5. Estado por caminho (resumo)
+
+- **Caminho 3 (consolidar)** ✅ pipeline único, pop fix, `dh_score` single-source, `pop_mismatch`.
+- **Caminho 2 (outlook)** ✅ coluna DH; validado com dado real ME.
+- **Caminho 1 (deals/CT)** ✅ coluna DH + Fix(1)/(2); falta medir cobertura real + decidir push/PR.
+
+---
+
+## 6. Snippet de extração (cola no Console F12 da página /card/<id>, devolve JSON cru)
+
+> Versão com o fix da população (DOM-anchored). Use `JSON.stringify(o)` no fim. O `doubleholo_scraper.js` completo (com `dhCard()`/`dhSetLinks()`/download) está em `~/doubleholo-scraper/`.
+
+Campos do JSON cru que o `ingest` consome: `cardId, name, set, number, marketPrice, priceChangePct, offerUrl, referenceUrl, premium{psa10,totalGraded,gemRate,bestROI,forecast,aiGrade,aiSignal}, premiumRendered`.
+
+---
+
+## 7. Memórias relacionadas
+`doubleholo_scraper_tool` (leitor JS) · `pokemon_longterm_outlook_location` · `psa_agent_scope_boundary` (gem_rate→--psa10-prob) · `feedback_delivery_myp_table_model` (2 links/linha) · `firecrawl_api_key_setup` · `scanners_commons_folder` · `windows_python_setup` · `cardtrader_scanner_location`.

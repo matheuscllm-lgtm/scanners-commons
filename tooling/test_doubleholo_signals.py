@@ -75,3 +75,80 @@ def test_normalize_flags_pop_mismatch_on_swapped_data():
     rec = normalize_record(raw)
     assert rec["signals"]["pop_mismatch"] is True
     assert any("pop_mismatch" in f for f in rec["flags"])
+
+
+def test_percentish_accepts_bare_number_when_scraper_drops_percent():
+    """Robustez (follow-up #3): campos percentuais (bestROI/gemRate/priceChangePct)
+    aceitam número puro além de "12%". Se o scraper algum dia parar de emitir o
+    '%', o sinal NÃO some calado — é parseado igual."""
+    raw = {
+        "cardId": "x", "name": "Y",
+        "referenceUrl": "https://www.tcgplayer.com/product/1",
+        "premiumRendered": True,
+        "priceChangePct": 4.4,  # número puro, SEM '%'
+        "premium": {"psa10": 138, "totalGraded": 3392,
+                    "gemRate": 4.1, "bestROI": 648.5,  # números puros
+                    "forecast": "Slightly favors buying",
+                    "aiGrade": "Maybe", "aiSignal": "Buy"},
+    }
+    rec = normalize_record(raw)
+    assert rec["signals"]["best_roi_pct"] == 648.5
+    assert rec["signals"]["gem_rate_pct"] == 4.1
+    assert rec["price_change_pct"] == 4.4
+    assert rec["signals"]["pop_mismatch"] is False  # 4.1 ≈ 138/3392
+    # mesmo dh_score que a variante com "%" (test_normalize_emits_dh_score_and_pid)
+    assert rec["dh_score"] == 100
+
+
+def test_percentish_ignores_currency_strings():
+    """_percentish NÃO deve confundir um valor monetário com percentual (cifrão
+    presente → None), pra nunca cruzar com o campo de preço."""
+    from doubleholo_signals import _percentish
+    assert _percentish("$27.70") is None
+    assert _percentish("12%") == 12.0
+    assert _percentish("+4.4%") == 4.4
+    assert _percentish(648.5) == 648.5
+    assert _percentish(None) is None
+
+
+def test_dh_score_none_when_only_public_momentum():
+    """price_change_pct é dado PÚBLICO (lido fora do bloco premium do scraper).
+    Sozinho NÃO qualifica como 2ª opinião premium → dh_score None. Sem isto, uma
+    carta raspada deslogada (só com variação de preço pública) ganharia uma nota
+    'premium' fabricada (ex.: 58) sem nenhum dado premium por trás."""
+    assert dh_score(_sig(price_change_pct=35.9)) is None
+    assert dh_score(_sig(price_change_pct=-12)) is None
+    # momentum só MODIFICA quando há sinal premium (aqui forecast=buy):
+    assert dh_score(_sig(forecast_dir="buy", price_change_pct=35.9)) == 78  # 50+20+8
+
+
+def test_normalize_dh_score_none_when_premium_not_rendered():
+    """premiumRendered=False (deslogado / 'Upgrade to unlock'): dh_score = None
+    (DH '—'), NUNCA um número. O sinal cru público (momentum) segue disponível,
+    só não vira nota — para a nota e a flag 'premium NÃO renderizou' não se
+    contradizerem."""
+    raw = {
+        "cardId": "x", "name": "Y",
+        "referenceUrl": "https://www.tcgplayer.com/product/1",
+        "premiumRendered": False,
+        "priceChangePct": "+35.9%",  # só dado público
+        "premium": {},
+    }
+    rec = normalize_record(raw)
+    assert rec["dh_score"] is None
+    assert any("premium" in f.lower() for f in rec["flags"])
+    assert rec["signals"]["price_change_pct"] == 35.9  # sinal cru preservado
+
+
+def test_normalize_flags_reference_url_without_product_id():
+    """referenceUrl PRESENTE mas sem /product/<id> (link tcgplayer genérico:
+    busca/parceiro/rodapé) → tcg_product_id None E uma FLAG explícita. Sem a flag,
+    a perda da chave de join seria calada (o guard antigo só flagava AUSÊNCIA)."""
+    raw = {
+        "cardId": "x", "name": "Y", "premiumRendered": True,
+        "referenceUrl": "https://www.tcgplayer.com/search/pokemon/product?q=foo",
+        "premium": {"forecast": "Slightly favors buying"},
+    }
+    rec = normalize_record(raw)
+    assert rec["tcg_product_id"] is None
+    assert any("product" in f.lower() for f in rec["flags"])

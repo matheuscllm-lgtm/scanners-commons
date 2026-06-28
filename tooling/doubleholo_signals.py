@@ -132,6 +132,28 @@ def _pct(s):
     return float(m.group(1).replace(",", "")) if m else None
 
 
+def _percentish(s):
+    """Percentual tolerante: aceita "12%"/"+12.5%" E número puro (12, 12.5).
+
+    Para os campos que o schema do scraper define como percentuais (bestROI,
+    gemRate, priceChangePct). Se um dia o scraper deixar de pôr o '%', o sinal
+    NÃO some calado (follow-up #3) — é parseado igual. Um valor com cifrão é
+    rejeitado (None) pra nunca cruzar com o campo de preço (esse vai por _money).
+    """
+    if s is None:
+        return None
+    if isinstance(s, (int, float)):
+        return float(s)
+    p = _pct(s)
+    if p is not None:
+        return p
+    t = str(s).strip()
+    if "$" in t:
+        return None
+    m = re.search(r"[+-]?\d[\d,]*\.?\d*", t)
+    return float(m.group(0).replace(",", "")) if m else None
+
+
 def _int(s):
     if s is None:
         return None
@@ -182,7 +204,12 @@ def dh_score(signals: dict | None) -> int | None:
     grade = (signals.get("ai_grade") or "").lower()
     roi = signals.get("best_roi_pct")
     mom = signals.get("price_change_pct")
-    if fdir == "neutral" and not ai and not grade and roi is None and mom is None:
+    # `price_change_pct` (momentum) é dado PÚBLICO — existe mesmo deslogado. Ele
+    # MODIFICA a nota, mas sozinho NÃO a qualifica: sem ao menos um sinal PREMIUM
+    # (forecast/ai_signal/ai_grade/best_roi) não há "2ª opinião premium" — devolve
+    # None (DH '—') em vez de fabricar uma nota só com variação de preço pública.
+    has_premium_signal = fdir != "neutral" or bool(ai) or bool(grade) or roi is not None
+    if not has_premium_signal:
         return None
     score = 50 + _FORECAST_PTS.get(fdir, 0) + _SIGNAL_PTS.get(ai, 0) + _GRADE_PTS.get(grade, 0)
     if roi is not None:
@@ -197,7 +224,7 @@ def normalize_record(raw: dict) -> dict:
     prem = raw.get("premium") or {}
     psa10 = _int(prem.get("psa10"))
     total = _int(prem.get("totalGraded"))
-    gem_pct = _pct(prem.get("gemRate"))
+    gem_pct = _percentish(prem.get("gemRate"))
     # gem_rate como FRAÇÃO (consumo do psa-arbitrage --psa10-prob)
     gem = (gem_pct / 100.0) if gem_pct is not None else (
         round(psa10 / total, 4) if (psa10 is not None and total) else None)
@@ -211,16 +238,22 @@ def normalize_record(raw: dict) -> dict:
         flags.append("pop_mismatch: gem_rate exibido ≠ psa10/total — revisar")
     if not raw.get("premiumRendered", True):
         flags.append("premium NÃO renderizou (logar/abrir Card Insights antes de raspar)")
-    if not raw.get("referenceUrl"):
+    ref_url = raw.get("referenceUrl")
+    if not ref_url:
         flags.append("sem reference_url TCGplayer (trainer/sem produto) — não inventar")
+    elif _tcg_product_id(ref_url) is None:
+        # reference_url PRESENTE mas não é tcgplayer.com/product/<id> (link genérico:
+        # busca/parceiro/rodapé) → sem productId, a chave de join. Flag explícita
+        # p/ a perda não ser calada (o scraper já prefere o link de produto).
+        flags.append("reference_url sem productId TCGplayer (link genérico, não /product/) — DH não casa")
 
-    price_change_pct = _pct(raw.get("priceChangePct"))
+    price_change_pct = _percentish(raw.get("priceChangePct"))
     signals = {
         "psa10_pop": psa10,
         "total_pop": total,
         "gem_rate": gem,
         "gem_rate_pct": gem_pct if gem_pct is not None else (round(100 * gem, 1) if gem is not None else None),
-        "best_roi_pct": _pct(prem.get("bestROI")),
+        "best_roi_pct": _percentish(prem.get("bestROI")),
         "forecast": prem.get("forecast"),
         "forecast_dir": forecast_dir(prem.get("forecast")),
         "ai_grade": prem.get("aiGrade"),
@@ -228,6 +261,13 @@ def normalize_record(raw: dict) -> dict:
         "price_change_pct": price_change_pct,  # momentum p/ dh_score (lido de signals)
         "pop_mismatch": pop_mismatch,
     }
+    # dh_score (2ª opinião, single source). Se o premium NÃO renderizou (deslogado
+    # / "Upgrade to unlock"), força None mesmo que dh_score() derivasse algo —
+    # cinto-e-suspensório com o guard de sinal premium, p/ a nota e a flag
+    # "premium NÃO renderizou" jamais se contradizerem (consumidores só LEEM a nota).
+    dh = dh_score(signals)
+    if not raw.get("premiumRendered", True):
+        dh = None
     return {
         "source": "doubleholo",
         "card_id": raw.get("cardId"),
@@ -239,7 +279,7 @@ def normalize_record(raw: dict) -> dict:
         "offer_url": raw.get("offerUrl"),
         "reference_url": raw.get("referenceUrl"),  # TCGplayer (preço fica aqui)
         "tcg_product_id": _tcg_product_id(raw.get("referenceUrl")),  # JOIN key c/ a frota
-        "dh_score": dh_score(signals),   # 2ª opinião (single source); consumidores só LEEM
+        "dh_score": dh,   # 2ª opinião (single source); consumidores só LEEM
         "signals": signals,
         "flags": flags,
     }

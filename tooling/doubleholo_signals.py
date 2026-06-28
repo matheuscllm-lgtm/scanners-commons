@@ -158,6 +158,10 @@ def _int(s):
     if s is None:
         return None
     if isinstance(s, (int, float)):
+        # NaN/inf (ex.: JSON com token NaN) quebrariam int() e abortariam a
+        # normalização do arquivo inteiro — trata como ausente (None, honesto).
+        if isinstance(s, float) and (s != s or s in (float("inf"), float("-inf"))):
+            return None
         return int(s)
     d = re.sub(r"[^\d]", "", str(s))  # tira separador de milhar "." ou ","
     return int(d) if d else None

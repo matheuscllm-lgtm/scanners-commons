@@ -152,3 +152,15 @@ def test_normalize_flags_reference_url_without_product_id():
     rec = normalize_record(raw)
     assert rec["tcg_product_id"] is None
     assert any("product" in f.lower() for f in rec["flags"])
+
+
+def test_int_handles_non_finite_floats():
+    """_int não pode crashar com NaN/inf (int(nan)→ValueError, int(inf)→OverflowError)
+    — um único registro com NaN abortaria a normalização do arquivo INTEIRO. Trata
+    como None (campo ausente, honesto)."""
+    from doubleholo_signals import _int
+    assert _int(float("nan")) is None
+    assert _int(float("inf")) is None
+    assert _int(float("-inf")) is None
+    assert _int(3392) == 3392
+    assert _int(12.0) == 12

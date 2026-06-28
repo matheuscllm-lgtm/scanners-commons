@@ -1,6 +1,13 @@
 # HANDOFF — Integração DoubleHolo na frota (RETOMAR AQUI)
 
-**Última sessão:** 2026-06-27 · **Status:** caminhos 3→2→1 implementados, testados e **commitados em branches** (NÃO pushados, NÃO mergeados). Pronto pra revisão/merge ou pra continuar.
+**Última sessão:** 2026-06-28 · **Status:** caminhos 3→2→1 implementados, testados, **revisados (review adversarial multi-agente)** e **commitados em branches** (NÃO pushados, NÃO mergeados). Pronto pra revisão/merge ou pra continuar.
+
+> **Sessão 2026-06-28 (ultracode):** rodei uma review adversarial multi-agente do
+> SISTEMA inteiro (pipeline+CT+outlook+scraper) — 9 achados brutos, **3 reais
+> confirmados** (4 telemetria = falsos-positivos; já cobertos). Implementei os 3
+> follow-ups antigos (#3 `_percentish`, #4 gate resolver, #5 telemetria) **e** os
+> 3 achados reais da review. Todos test-first. **Testes: pipeline 13 · outlook 68
+> · CT 200.** Novos commits abaixo. Detalhe no §4-bis.
 
 > **Em uma frase:** o DoubleHolo (premium) entrega ANÁLISE DE MERCADO (gem rate, população PSA, ROI de gradação, forecast, sinal IA, sentimento) — **não preço** (preço = TCGplayer, já resolvido). Construímos uma coluna "DH" (2ª opinião, nota 0-100) no `pokemon-longterm-outlook` e no `card-trader-scanner`, alimentada por um pipeline canônico, com join determinístico por **productId do TCGplayer**.
 
@@ -10,14 +17,14 @@
 
 | Repo | Branch | Commit | O quê |
 |---|---|---|---|
-| `scanners-commons` | `feat/doubleholo-integration` | `0d0b5c0` | pipeline `tooling/doubleholo_signals.py` (discover+ingest, `dh_score` SINGLE SOURCE), testes, este handoff |
-| `pokemon-longterm-outlook` | `feat/doubleholo-dh-column` | `6b26c93` | coluna DH via `--doubleholo`; `outlook/doubleholo.py`; testes |
-| `card-trader-scanner` | `feat/doubleholo-dh-column` | `cee8974` | coluna DH + resolver productId (Fix 1/2); `doubleholo_join.py`, `tcgcsv_productid.py`; testes |
+| `scanners-commons` | `feat/doubleholo-integration` | `bc3a50d` | pipeline `tooling/doubleholo_signals.py` (discover+ingest, `dh_score` SINGLE SOURCE), testes, este handoff. **2026-06-28:** dh_score exige sinal premium + `_percentish` + flag ref-url genérica |
+| `pokemon-longterm-outlook` | `feat/doubleholo-dh-column` | `6b26c93` | coluna DH via `--doubleholo`; `outlook/doubleholo.py`; testes (review 2026-06-28 = SEM bug, nada a mudar) |
+| `card-trader-scanner` | `feat/doubleholo-dh-column` | `ed61a2c` | coluna DH + resolver productId (Fix 1/2); `doubleholo_join.py`, `tcgcsv_productid.py`; testes. **2026-06-28:** `resolve_mask` gate (deals+near-miss) + telemetria |
 
-**Testes (todos verdes):** pipeline **8** · outlook **68** · CardTrader **195**.
+**Testes (todos verdes):** pipeline **13** · outlook **68** · CardTrader **200**.
 **Rodar:** `cd <repo> && PYTHONIOENCODING=utf-8 .venv\Scripts\python.exe -m pytest tests/ -q` (no scanners-commons: `cd tooling && python -m pytest test_doubleholo_signals.py -q`).
 
-**A 4ª peça (NÃO commitada, fica local):** o **DOM-scraper** em `~/doubleholo-scraper/doubleholo_scraper.js` — leitor premium que raspa o DOM logado (sem token). Ver `~/doubleholo-scraper/HANDOFF.md`.
+**A 4ª peça (NÃO commitada, fica local):** o **DOM-scraper** em `~/doubleholo-scraper/doubleholo_scraper.js` — leitor premium que raspa o DOM logado (sem token). Ver `~/doubleholo-scraper/HANDOFF.md`. **2026-06-28:** `referenceUrl` agora PREFERE `tcgplayer.com/product/` (fallback genérico) — não dropa mais a chave de join caladamente. Edição local (repo não-git).
 
 ---
 
@@ -71,10 +78,10 @@ base 50
 1. [ ] **Push + PR das 3 branches?** (ainda não pushadas.) Convenção CT = branch+PR. Se OK, push e abrir 3 PRs com resumo do review.
 2. [ ] **Cobertura real do join no CT:** numa run modern, 100% das linhas vêm via pokemontcg (redirect, sem productId) → dependem do **resolver offline Fix(2)**. Falta medir a % real de resolução numa run ao vivo (precisa chamada tcgcsv online). Os sets de fallback tcgcsv (ME/asc) casam direto via Fix(1).
 
-**Follow-ups menores (anotados na revisão, não bloqueiam):**
-3. [ ] `_pct` exige `%` literal — se o scraper algum dia emitir número puro, sinal some calado (hoje emite "%", OK).
-4. [ ] `attach_product_ids` roda I/O por linha (inclui NAO) em `--all-sets` — gatear pras linhas que viram deal.
-5. [ ] contagem "N casaram" inclui `dh_score=None` (telemetria infla; cosmético).
+**Follow-ups menores — TODOS RESOLVIDOS em 2026-06-28:**
+3. [x] `_pct` exige `%` literal → criado `_percentish` (aceita número puro p/ campos %, rejeita cifrão).
+4. [x] `attach_product_ids` roda I/O em linhas NÃO no `--all-sets` → `resolve_mask` gateia o resolver OFFLINE pras linhas da entrega (deals OU near-miss); Fix(1) sem I/O segue p/ todas.
+5. [x] contagem "N casaram" inclui `dh_score=None` → telemetria separa "casaram" de "com nota DH".
 
 **Expansões possíveis (caminho 1 além do CT):**
 6. [ ] Levar a coluna DH a outros scanners (MYP/Liga/integrated). MYP/Liga hoje só têm redirect `prices.pokemontcg.io/tcgplayer/{cardId}` (sem productId) → precisariam da mesma ponte tcgcsv (cardId→productId) que o CT já tem em `tcgcsv_productid.py`.
@@ -94,6 +101,31 @@ base 50
 - **Outlook join só com `--source tcgcsv`** (lá `card_id`=productId). Com `--source ptcg` o id é `sv1-25` → casa 0 (agora avisa).
 
 ---
+
+## 4-bis. Review adversarial multi-agente (2026-06-28) — 3 achados REAIS corrigidos
+
+Revisão do SISTEMA (não só do diff) com 4 revisores + verificação adversarial. 9 brutos → 3 reais:
+
+1. **[MEDIO] `dh_score` de momentum PÚBLICO sozinho** (achado nº1, 2 revisores). `price_change_pct`
+   é lido FORA do bloco premium do scraper (existe deslogado). O guard antigo só dava None se
+   `mom` também fosse None → uma carta com `premiumRendered=false` ganhava nota "premium" fake
+   (ex.: 58) **E** a flag "premium NÃO renderizou" ao mesmo tempo (contradição). **Fix:** `dh_score`
+   exige ≥1 sinal PREMIUM (forecast/ai_signal/ai_grade/best_roi); momentum só MODIFICA. Cinto-e-
+   suspensório: `normalize_record` força `None` se `premiumRendered=false`.
+2. **[BAIXO] scraper `referenceUrl` pegava 1º link tcgplayer sem exigir `/product/`** → um link
+   genérico (busca/parceiro/rodapé) antes do de produto dropava a chave de join caladamente.
+   **Fix:** prefere `tcgplayer.com/product/`, fallback genérico. + flag no pipeline quando ref-url
+   presente mas sem productId (fecha o gap de telemetria silenciosa).
+3. **[BAIXO] gate do #4 apagava DH no near-miss** — sem nenhum deal, `deal_mask` ficava toda False,
+   o resolver rodava em 0 linhas e a tabela near-miss entregue perdia a coluna DH. **Fix:**
+   `_delivery_resolve_mask` cobre deals OU (sem deal) os top_md near-miss. All Listings (XLSX) fica
+   best-effort por design (DH = 2ª opinião de DEAL, não de listing rejeitado).
+
+**4 falsos-positivos** (telemetria "N casaram" inflada): refutados — a contagem já é honesta
+(`matched` vs `scored` no CT; "por productId" explícito no outlook). NÃO mexer.
+
+**Não-bug confirmado:** `discover_set` regex slugful está CERTO (URLs reais do DoubleHolo têm slug
+com número no fim, ex. `/card/52333/pikachu-ex-pokemon-ascended-heroes-276`).
 
 ## 5. Estado por caminho (resumo)
 

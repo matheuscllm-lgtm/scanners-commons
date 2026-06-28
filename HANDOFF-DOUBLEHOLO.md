@@ -1,6 +1,6 @@
 # HANDOFF — Integração DoubleHolo na frota (RETOMAR AQUI)
 
-**Última sessão:** 2026-06-28 · **Status:** caminhos 3→2→1 implementados, testados, **revisados (review adversarial multi-agente)** e **commitados em branches** (NÃO pushados, NÃO mergeados). Pronto pra revisão/merge ou pra continuar.
+**Última sessão:** 2026-06-28 · **Status:** caminhos 3→2→1 implementados, testados, **revisados (review adversarial + code-review merge gate)** e **MERGEADOS nas branches default** (commons→`master`, CT→`main`, outlook→`main`, merge commits `--no-ff`). **Local — NÃO pushados pro GitHub ainda** (decisão de push pendente do operador).
 
 > **Sessão 2026-06-28 (ultracode):** rodei uma review adversarial multi-agente do
 > SISTEMA inteiro (pipeline+CT+outlook+scraper) — 9 achados brutos, **3 reais
@@ -75,7 +75,7 @@ base 50
 ## 3. PRÓXIMOS PASSOS (o que falta)
 
 **Imediato (decisão do operador):**
-1. [ ] **Push + PR das 3 branches?** (ainda não pushadas.) Convenção CT = branch+PR. Se OK, push e abrir 3 PRs com resumo do review.
+1. [~] **MERGEADO localmente 2026-06-28** (merge `--no-ff` nas defaults). **Falta só `git push`** dos 3 repos pro GitHub (público) — decisão de publicar é do operador. As feature branches seguem locais (podem ser deletadas pós-push).
 2. [ ] **Cobertura real do join no CT:** numa run modern, 100% das linhas vêm via pokemontcg (redirect, sem productId) → dependem do **resolver offline Fix(2)**. Falta medir a % real de resolução numa run ao vivo (precisa chamada tcgcsv online). Os sets de fallback tcgcsv (ME/asc) casam direto via Fix(1).
 
 **Follow-ups menores — TODOS RESOLVIDOS em 2026-06-28:**

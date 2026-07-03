@@ -79,6 +79,33 @@ bash tooling/sync-auto-skill.sh
   (bug de preço → 3 lentes; set sem cobertura → Explore + 2 fontes; drift →
   Workflow; auditoria → silent-failure-hunter).
 - **Checklist Definition-of-Done (§5e)**: lista que o assistente marca antes de
-  dizer "pronto" (teste colado? CI verde? preço 2 fontes? segredo varrido?).
+  dizer "pronto" (teste colado? CI verde? preço 2 fontes? segredo varrido?
+  coleta não-vazia? run longo seguro? custo na escada?).
+- **Execução segura de runs longos (§4b)**: scan que demora horas nunca roda
+  "preso" na sessão (morre junto) — é lançado **solto no sistema** com log em
+  arquivo; antes de lançar confere se **já não tem outro scan rodando**; se o
+  processo morrer, diagnostica antes de tentar de novo (1 retry retomando o
+  checkpoint), e se morrer de novo divide em **lotes menores** em vez de
+  insistir. Entrega sempre declara o que cobriu e o que faltou.
+- **Espera de CI sem estourar o GitHub (§4b)**: nada de vigiar o CI a cada 3
+  segundos (isso esgota a cota da API do GitHub em ~25 min) — consulta espaçada
+  (1 a 15 min) com limite de espera; e enquanto espera, adianta outra tarefa.
+- **Gate "verde-mas-vazio" (§5a)**: scan que termina "com sucesso" mas coletou
+  **0 produtos** não vira "0 deals hoje" — é sintoma (headless sem janela, BOM
+  no segredo, Cloudflare, API fora) e exige diagnóstico antes de qualquer
+  entrega.
+- **Escada de custo (§3)**: primeiro cache e rotas grátis; recurso pago só em
+  amostra pequena proporcional ao valor; volume pago é freio duro — entrega o
+  que a amostra cobre e deixa a pergunta de autorização registrada, sem travar
+  o resto.
+- **Escada de desbloqueio (§4b)**: travou? 1 retry → rota alternativa → 1
+  contorno barato → registra a pendência com prova e segue com o resto. Nunca
+  fica repetindo o mesmo comando, e nunca te acorda por bloqueio que não seja
+  um dos 4 freios.
+- **Regras que viajam pra nuvem**: tudo acima está **dentro do contrato** de
+  propósito — na nuvem a memória do seu PC e o CLAUDE.md global não existem, e
+  antes essas lições de segurança só moravam lá.
 
-*Versão da fonte-mestra: 2026-06-26 (v3.1 — playbook + DoD + quick-ref).*
+*Versão da fonte-mestra: 2026-07-03 (v3.2 — execução segura: runs longos,
+rate-limit de CI, verde-mas-vazio, escadas de custo/desbloqueio, entrega
+verbatim 2-links no contrato).*

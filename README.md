@@ -33,11 +33,11 @@ Termos rápidos (o operador é médico, não programador):
 | Scanner | Pasta local | Repo GitHub | Compra (loja) | Referência de preço | Chaves necessárias |
 |---|---|---|---|---|---|
 | **MYP** | `myp-arbitrage-scanner` | `matheuscllm-lgtm/myp-arbitrage-scanner` | MYP Cards (BR, R$) | **tcgcsv.com** (real) → pokemontcg.io → `.estat-tcg` (fallback) | `POKEMONTCG_API_KEY`, `FIRECRAWL_API_KEY` |
-| **CardTrader** | `card-trader-scanner` | `matheuscllm-lgtm/Card-trader-scanner` | CardTrader (Europa, €/US$) | **pokemontcg.io** (+ validação per-blueprint) → fallback **tcgcsv.com** (sets sem preço, ex. `asc`) | `CT_JWT`, `POKEMONTCG_API_KEY` |
-| **Liga** | `liga-pokemon-scanner` | `matheuscllm-lgtm/Liga-cards-scanner` | Liga Pokémon (BR, R$) | **pokemontcg.io** (usa `POKEMONTCG_API_KEY` se houver) → sets novos via MYP API → PriceCharting | `POKEMONTCG_API_KEY` (CI mock/offline; coleta ao vivo é headful) |
-| **COMC** | `scanner-comc` | `matheuscllm-lgtm/scanner-comc` | COMC (US, US$) | **tcgcsv.com** (market→mid→low) | `FIRECRAWL_API_KEY` (só nuvem, hoje dormente) |
+| **CardTrader** | `card-trader-scanner` | `matheuscllm-lgtm/card-trader-scanner` | CardTrader (Europa, €/US$) | **pokemontcg.io** (+ validação per-blueprint) → fallback **tcgcsv.com** (sets sem preço, ex. `asc`) | `CT_JWT`, `POKEMONTCG_API_KEY` |
+| **Liga** | `liga-pokemon-scanner` | `matheuscllm-lgtm/liga-cards-scanner` | Liga Pokémon (BR, R$) | **pokemontcg.io** (usa `POKEMONTCG_API_KEY` se houver; **única fonte real implementada** no repo — sem preço → `n/d` honesto) | `POKEMONTCG_API_KEY` (CI mock/offline; coleta ao vivo é headful) |
+| **COMC** | `scanner-comc` | `matheuscllm-lgtm/scanner-comc` | COMC (US, US$) | **tcgcsv.com** (market→mid→low) | `FIRECRAWL_API_KEY` (usada por qualquer run no fetch-mode default `firecrawl`; só `--fetch-mode playwright` dispensa) |
 | **eBay** | `ebay-arbitrage-scanner` | `matheuscllm-lgtm/ebay-arbitrage-scanner` | eBay (US, US$) | **PriceCharting** (raw + graded) | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` |
-| **Selados** | `sealed-arbitrage-scanner` | `matheuscllm-lgtm/sealed-arbitrage-scanner` | Liga / OLX / Amazon BR / ML | **TCGplayer US** (selado) | `FIRECRAWL_API_KEY` |
+| **Selados** | `sealed-arbitrage-scanner` | `matheuscllm-lgtm/sealed-scanner` | Liga / OLX / Amazon BR / ML | **TCGplayer US** (selado) | `FIRECRAWL_API_KEY` |
 
 > A chave **`POKEMONTCG_API_KEY`** é a mesma pra todos (valor gerenciado nas variáveis de ambiente do Windows e nos secrets do GitHub — **o valor não é versionado**; ver [`03-CHAVES-API.md`](03-CHAVES-API.md) pra conferir/setar).
 
@@ -45,7 +45,7 @@ Termos rápidos (o operador é médico, não programador):
 
 ## Regras de ouro que valem pra TODOS os scanners
 
-1. **Margem é BRUTA, 30% mínimo.** Só `(revenda − compra) / compra`. Nenhuma taxa embutida (frete, cartão, IOF — você calcula por fora). Piso de relevância: **R$50** (~US$10).
+1. **Margem é BRUTA, 30% mínimo.** Só `(revenda − compra) / compra`. Nenhuma taxa embutida (frete, cartão, IOF — você calcula por fora). Piso de relevância: **R$50** (~US$10) — **só para cartas avulsas (singles)**; produtos **selados não têm piso** (decisão do operador, 2026-06-27: lá o único critério é a margem ≥30%).
 2. **Só Near Mint (NM).** Condição lida de célula dedicada, match EXATO `== "NM"` — nunca "contém NM" (isso já vazou SP no passado).
 3. **Nunca inventar preço.** Se a fonte falha, marca como fallback/erro e segue — jamais fabrica um número.
 4. **Entrega = tabela markdown no chat.** Nunca arquivo XLSX por padrão (só se você pedir). Gerada pela ferramenta do repo, nunca montada à mão. Ver [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md).

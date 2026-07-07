@@ -22,11 +22,11 @@
 - **Plano B real = validação:** o guard contra falso positivo continua sendo o `validate_per_blueprint` (casa NM + variante exata) — o tcgcsv preenche cobertura, não substitui a validação.
 - **Guardas anti-inflação:** `_rarity_is_holo` (variante), filtro Trainer/Galarian Gallery **em scan time** (regex `^(?:TG|GG)\d+` — antes só TG##), cache versionado (`PRICE_LOGIC_VERSION`).
 
-## Liga — `liga-pokemon-scanner`
+## Liga — `liga-cards-scanner` (pasta local no PC: `liga-pokemon-scanner`)
 - **Compra:** ofertas na Liga Pokémon (Brasil, R$), coletadas ao vivo (navegador headful + decodificação de sprite de preço).
 - **Referência (cadeia):**
   1. **`pokemontcg.io`** — `tcgplayer.prices.<variante>.market`. Varre TODAS as variantes presentes (holofoil, normal, reverseHolofoil…) e escolhe a de **MENOR market** (escolha conservadora anti-inflação; assume que o vendedor da Liga lista a versão regular barata, não a alt art cara). **Usa `POKEMONTCG_API_KEY` quando presente** (header `X-Api-Key`, sobe o limite de requisições); sem a chave, segue anônimo.
-  2. **Sets ME/SV-novos** (que o pokemontcg.io ainda não tem): `resolve_refs.py` → **API do MYP (`tcg_price`)** primeiro → **PriceCharting** como fallback (só pra cartas ≥ R$50 que o MYP não cobre). Cada linha leva a etiqueta da origem (`MYP`/`PriceCharting`).
+  2. **Sem preço na pokemontcg.io → `n/d` honesto** (`usd=None`/`margin=None`). ⚠️ Correção (2026-07-06, verificada no código): o repo atual **NÃO tem** fallback via API do MYP nem PriceCharting — as fontes implementadas em `src/collectors/tcgplayer.py` são só `mock | csv | pokemontcg | api` (stub). A escada `resolve_refs.py` → MYP → PriceCharting descrita antes aqui era do protótipo antigo e não existe no `liga-cards-scanner`.
 - **Honestidade:** se não acha preço, deixa `usd=None`/`margin=None`; coletor levanta erro em vez de inventar.
 
 ## COMC — `scanner-comc`
@@ -42,7 +42,7 @@
 - **Fallback:** **nenhum** — se uma nota não tem preço no PriceCharting, o anúncio é **descartado** (não inventa). Não usa tcgcsv/pokemontcg.io (modelo estruturalmente diferente: raw+graded vs PriceCharting).
 - **Guarda de honestidade:** "referência desalinhada" — comparando o valor justo com a mediana de ≥3 anúncios eBay limpos da mesma nota: se o justo for >1,5× a mediana, marca **REVISAR** (referência possivelmente inflada); se for <0,6×, adiciona flag (referência possivelmente defasada pra baixo).
 
-## Selados — `sealed-arbitrage-scanner`
+## Selados — `sealed-scanner` (pasta local no PC: `sealed-arbitrage-scanner`)
 - **Compra:** Liga / OLX / Amazon BR / Mercado Livre (produtos selados, R$).
 - **Referência:** **TCGplayer US** (preço Market do selado, obtido via espelho `tcgcsv.com`).
 - **Fallback / rotas:** OLX tem WAF Cloudflare → modo `firecrawl` (`config.olx.mode`, default `urllib`); guards FP-safe de referência US; gate de condição selado/usado.
@@ -56,7 +56,7 @@
 |---|---|---|---|
 | MYP | tcgcsv.com | pokemontcg.io → `.estat-tcg` (rotulado) | ✅ |
 | CardTrader | pokemontcg.io (validação per-blueprint) | tcgcsv.com (só em set 0-cobertura; mesma seleção de variante) | ✅ |
-| Liga | pokemontcg.io (usa a key se houver) | MYP API → PriceCharting (sets novos) | ✅ |
+| Liga | pokemontcg.io (usa a key se houver) | — (sem fallback implementado; sem preço → `n/d`) | ✅ |
 | COMC | tcgcsv.com (market→mid→low) | TCGdex (mesmo marketPrice TCGplayer, por set, na falha) | ✅ |
 | eBay | PriceCharting | — (descarta se faltar) | ✅ |
 | Selados | TCGplayer US (via tcgcsv.com) | Firecrawl (OLX/WAF) | ✅ |

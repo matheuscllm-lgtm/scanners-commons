@@ -26,7 +26,7 @@ GitHub Actions = robôs que rodam na nuvem. Dois tipos aqui: **`tests`/`CI`** (r
 | Weekly Scan (full scope) | scan | manual |
 - **Corrigido em 22/06 (PR #32):** os scans estavam fixados em Python 3.14 (quebrava numpy/pandas) e a chave tinha BOM → agora Python **3.12** + chave limpa. Os scans agora rodam de verdade (108s pra ~37k listings).
 
-## Liga — `liga-pokemon-scanner`
+## Liga — `liga-cards-scanner` (pasta local no PC: `liga-pokemon-scanner`)
 | Workflow | Tipo | Quando |
 |---|---|---|
 | `CI` | testes + smoke mock | push/PR |
@@ -47,7 +47,7 @@ GitHub Actions = robôs que rodam na nuvem. Dois tipos aqui: **`tests`/`CI`** (r
 | `tests` | testes | push/PR |
 - Só testes (offline). Não há scan na nuvem — o eBay roda local (usa as chaves do PC). Os testes não precisam das chaves (são mock/fixture).
 
-## Selados — `sealed-arbitrage-scanner`
+## Selados — `sealed-scanner` (pasta local no PC: `sealed-arbitrage-scanner`)
 | Workflow | Tipo | Quando |
 |---|---|---|
 | `tests` | testes | push/PR |

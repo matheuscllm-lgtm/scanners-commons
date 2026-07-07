@@ -24,6 +24,7 @@ Termos rápidos (o operador é médico, não programador):
 | [`03-CHAVES-API.md`](03-CHAVES-API.md) | Todas as chaves de API necessárias, onde ficam, como conferir |
 | [`04-GITHUB-ACTIONS.md`](04-GITHUB-ACTIONS.md) | Workflows ativos por scanner (todos públicos = Actions grátis) |
 | [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md) | O formato padrão da tabela de entrega (estilo MYP) |
+| [`06-AUTO-SKILL.md`](06-AUTO-SKILL.md) | O comando `/auto` (modo autônomo), fonte-mestra `tooling/auto.md` e o script de sync |
 
 ---
 

@@ -1,0 +1,1033 @@
+<title>Radar TCG — Painel de Arbitragem</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#ECEFF2; --surface:#FFFFFF; --surface2:#F4F6F8;
+  --ink:#17242E; --muted:#55636F; --line:#D4DBE1; --line-soft:#E4E9ED;
+  --accent-myp:#9A5300; --accent-myp-soft:#F6E8D5; --accent-ct:#2F5FC0; --accent-ct-soft:#E2EAFA;
+  --ok:#1B7A43; --ok-soft:#DFF0E5; --warn:#8A6100; --warn-soft:#F5EBD2; --bad:#B0362C; --bad-soft:#F8E3E0;
+  --accent:var(--accent-myp); --accent-soft:var(--accent-myp-soft);
+  --shadow:0 1px 2px rgba(23,36,46,.06),0 4px 14px rgba(23,36,46,.06);
+  --radius:10px;
+  --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0E1419; --surface:#161E25; --surface2:#1C252E;
+    --ink:#E7EDF2; --muted:#96A5B1; --line:#2A3541; --line-soft:#222D37;
+    --accent-myp:#F0A64E; --accent-myp-soft:#3A2C17; --accent-ct:#8FB3F7; --accent-ct-soft:#1B2A45;
+    --ok:#63C48D; --ok-soft:#173226; --warn:#E0B25C; --warn-soft:#332A14; --bad:#EE8B80; --bad-soft:#3A1F1C;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1419; --surface:#161E25; --surface2:#1C252E;
+  --ink:#E7EDF2; --muted:#96A5B1; --line:#2A3541; --line-soft:#222D37;
+  --accent-myp:#F0A64E; --accent-myp-soft:#3A2C17; --accent-ct:#8FB3F7; --accent-ct-soft:#1B2A45;
+  --ok:#63C48D; --ok-soft:#173226; --warn:#E0B25C; --warn-soft:#332A14; --bad:#EE8B80; --bad-soft:#3A1F1C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  --bg:#ECEFF2; --surface:#FFFFFF; --surface2:#F4F6F8;
+  --ink:#17242E; --muted:#55636F; --line:#D4DBE1; --line-soft:#E4E9ED;
+  --accent-myp:#9A5300; --accent-myp-soft:#F6E8D5; --accent-ct:#2F5FC0; --accent-ct-soft:#E2EAFA;
+  --ok:#1B7A43; --ok-soft:#DFF0E5; --warn:#8A6100; --warn-soft:#F5EBD2; --bad:#B0362C; --bad-soft:#F8E3E0;
+  --shadow:0 1px 2px rgba(23,36,46,.06),0 4px 14px rgba(23,36,46,.06);
+}
+:root[data-scanner="ct"]{ --accent:var(--accent-ct); --accent-soft:var(--accent-ct-soft); }
+
+/* ============ BASE ============ */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14.5px;line-height:1.5;}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+code,.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 60px}
+
+/* ============ HEADER ============ */
+header.app{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+.foil{height:3px;background:linear-gradient(90deg,var(--accent) 0%,var(--accent-soft) 35%,var(--accent) 60%,var(--accent-soft) 100%)}
+.bar{max-width:1180px;margin:0 auto;padding:12px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand .logo{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.brand .logo .dot{color:var(--accent)}
+.brand .sub{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface2)}
+.seg button{border:0;background:transparent;padding:7px 14px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg.views button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* ============ CARDS / PANELS ============ */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-top:18px}
+.panel>h2{font-size:15px;letter-spacing:.01em;margin-bottom:4px}
+.panel .hint{color:var(--muted);font-size:13px;margin:2px 0 10px}
+.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:2px}
+
+.notice{border-left:3px solid var(--warn);background:var(--warn-soft);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;margin-top:12px}
+.notice.info{border-left-color:var(--accent);background:var(--accent-soft)}
+.notice.demo{border-left-color:var(--bad);background:var(--bad-soft)}
+
+/* ============ CONFIG VIEW ============ */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+@media (max-width:920px){.cols{grid-template-columns:1fr}}
+.sticky{position:sticky;top:76px}
+@media (max-width:920px){.sticky{position:static}}
+
+details.group{border:1px solid var(--line);border-radius:9px;margin-top:10px;background:var(--surface)}
+details.group summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;list-style:none;user-select:none}
+details.group summary::-webkit-details-marker{display:none}
+details.group summary .chev{transition:transform .15s;color:var(--muted);font-size:11px}
+details.group[open] summary .chev{transform:rotate(90deg)}
+.gname{font-weight:700}
+.gmeta{color:var(--muted);font-size:12.5px}
+.gcount{margin-left:auto;font-size:12px;color:var(--muted)}
+.gbtn{border:1px solid var(--line);background:var(--surface2);border-radius:6px;padding:2px 9px;font-size:12px;font-weight:600}
+.gbtn:hover{border-color:var(--accent);color:var(--accent)}
+.setlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 14px;padding:4px 12px 12px;border-top:1px solid var(--line-soft)}
+.setlist label{display:flex;gap:8px;align-items:baseline;padding:4px 2px;border-radius:6px;font-size:13.5px;cursor:pointer}
+.setlist label:hover{background:var(--surface2)}
+.setlist input{accent-color:var(--accent);flex:none;transform:translateY(2px)}
+.setlist .code{color:var(--muted);font-size:12px;font-family:var(--font-mono)}
+
+.field{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.field>label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.field .row{display:flex;gap:10px;align-items:center}
+.field input[type=range]{flex:1;accent-color:var(--accent)}
+.field input[type=number]{width:86px;font-family:var(--font-mono)}
+.field .conv{font-size:12.5px;color:var(--muted)}
+.field .conv b{color:var(--accent);font-family:var(--font-mono)}
+
+pre.cmd{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.55;overflow-x:auto;white-space:pre;margin:10px 0 0}
+.cmdhead{display:flex;align-items:center;gap:8px;margin-top:14px}
+.cmdhead h3{font-size:13px}
+.copy{margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:4px 12px;font-size:12.5px;font-weight:600}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+.copy.done{border-color:var(--ok);color:var(--ok)}
+
+/* ============ EXPLORER ============ */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 14px}
+.tile .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.tile .v{font-family:var(--font-mono);font-size:24px;font-weight:700;margin-top:2px}
+.tile .v small{font-size:13px;color:var(--muted);font-weight:400}
+.tile.acc .v{color:var(--accent)}
+
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface2);border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip.stat-ok[aria-pressed="true"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.chip.stat-warn[aria-pressed="true"]{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.chip.stat-bad[aria-pressed="true"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+
+.rules{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.rule{display:flex;gap:8px;align-items:center;font-size:13px}
+.rule .del{border:0;background:transparent;color:var(--bad);font-weight:700;padding:2px 6px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:1px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:99px;background:currentColor}
+.b-ok{background:var(--ok-soft);color:var(--ok)}
+.b-warn{background:var(--warn-soft);color:var(--warn)}
+.b-bad{background:var(--bad-soft);color:var(--bad)}
+.b-src{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.b-src.fb{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:9px;margin-top:12px;background:var(--surface)}
+table.deals{border-collapse:collapse;width:100%;min-width:1040px;font-size:13px}
+table.deals th{position:sticky;top:0;background:var(--surface2);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:2}
+table.deals th.sortable{cursor:pointer}
+table.deals th.sortable:hover{color:var(--accent)}
+table.deals th .arr{font-size:9px}
+table.deals td{padding:7px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.deals tbody tr:hover{background:var(--surface2)}
+table.deals tr.rej td{opacity:.62}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+td .cardname{font-weight:600}
+td .cardnum{color:var(--muted);font-size:12px;font-family:var(--font-mono)}
+td.margin{font-weight:700;font-family:var(--font-mono);text-align:right;white-space:nowrap}
+.links a{font-size:12.5px;font-weight:600}
+
+.hist{display:flex;align-items:flex-end;gap:3px;height:110px;margin-top:10px;padding:6px 4px 0;border-bottom:1px solid var(--line)}
+.hist .bin{flex:1;background:var(--accent);opacity:.78;border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.hist .bin:hover{opacity:1}
+.hist .bin.below{background:var(--muted);opacity:.4}
+.histx{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;font-family:var(--font-mono);margin-top:3px}
+
+.toolrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;font-weight:600;font-size:13px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.primary:hover{opacity:.9;color:var(--surface)}
+
+textarea.paste{width:100%;min-height:110px;font-family:var(--font-mono);font-size:12px;resize:vertical}
+.importrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.count-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+footer.app{margin-top:36px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+footer.app p{margin:4px 0}
+
+.viewhide{display:none!important}
+</style>
+
+<header class="app">
+  <div class="foil" aria-hidden="true"></div>
+  <div class="bar">
+    <div class="brand">
+      <span class="logo">Radar<span class="dot">·</span>TCG</span>
+      <span class="sub">painel de arbitragem</span>
+    </div>
+    <div class="seg" role="group" aria-label="Scanner ativo">
+      <button id="sc-myp" aria-pressed="true">MYP <span style="font-weight:400">(Brasil · R$)</span></button>
+      <button id="sc-ct" aria-pressed="false">CardTrader <span style="font-weight:400">(Europa · US$)</span></button>
+    </div>
+    <div class="seg views" role="group" aria-label="Etapa">
+      <button id="tab-config" aria-pressed="true">1 · Montar scan</button>
+      <button id="tab-explore" aria-pressed="false">2 · Explorar resultados</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ================= CONFIG VIEW ================= -->
+<section id="view-config">
+  <div class="panel">
+    <div class="eyebrow" id="cfg-eyebrow">Scanner MYP — mypcards.com → TCGplayer</div>
+    <h2 id="cfg-title">Montar o scan por grupos canônicos</h2>
+    <p class="hint" id="cfg-hint">Escolha os sets abaixo (os 6 grupos são os mesmos da skill <code>scan-myp</code>, dimensionados para ≤ ~2h30 cada). O comando pronto aparece ao lado — é só copiar e rodar. O app converte a margem para a convenção certa do scanner sozinho.</p>
+    <div class="cols">
+      <div id="groups"></div>
+      <div class="sticky">
+        <div class="panel" style="margin-top:10px">
+          <h2>Parâmetros</h2>
+          <div class="field">
+            <label for="p-margin">Margem bruta mínima</label>
+            <div class="row">
+              <input type="range" id="p-margin-r" min="0" max="100" step="1" value="30">
+              <input type="number" id="p-margin" min="0" max="500" step="1" value="30" aria-label="Margem mínima em porcento">
+              <span>%</span>
+            </div>
+            <div class="conv" id="p-margin-conv"></div>
+          </div>
+          <div class="field">
+            <label for="p-floor" id="p-floor-label">Piso de preço (R$)</label>
+            <div class="row">
+              <input type="number" id="p-floor" min="0" step="1" value="50">
+              <span class="conv" id="p-floor-note">padrão da frota: R$50 (~US$10) para cartas avulsas</span>
+            </div>
+          </div>
+          <div class="field" id="f-delay">
+            <label for="p-delay">Delay entre páginas (s)</label>
+            <div class="row"><input type="number" id="p-delay" min="0.5" step="0.5" value="1.5"><span class="conv">1.5 é o canônico</span></div>
+          </div>
+          <div class="field viewhide" id="f-validate">
+            <label for="p-validate">Validar top N (per-blueprint)</label>
+            <div class="row"><input type="number" id="p-validate" min="0" step="5" value="30"><span class="conv">sempre conferir — sem isso ~76% dos achados eram falsos</span></div>
+          </div>
+          <div class="cmdhead"><h3 id="cmd1-title">Comando do scan</h3><button class="copy" data-copy="cmd1">Copiar</button></div>
+          <pre class="cmd" id="cmd1"></pre>
+          <div class="cmdhead"><h3 id="cmd2-title">Entrega (gera a tabela oficial)</h3><button class="copy" data-copy="cmd2">Copiar</button></div>
+          <pre class="cmd" id="cmd2"></pre>
+          <div class="notice" id="cfg-warn"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPLORER VIEW ================= -->
+<section id="view-explore" class="viewhide">
+
+  <div class="panel">
+    <div class="eyebrow">Passo 1 — Carregar resultados</div>
+    <h2>Importar um scan já rodado</h2>
+    <p class="hint">Cole aqui o conteúdo do resultado de um scan (CSV exportado do XLSX — no Excel: <em>Salvar como → CSV</em> — ou JSON). O app reconhece as colunas dos dois scanners automaticamente. <strong>Este painel não coleta preços sozinho e nunca inventa preço</strong> — ele só organiza o que os scanners geraram.</p>
+    <textarea id="paste" class="paste" placeholder="Cole o CSV (com a linha de cabeçalho: Card Name, Edition, Rarity, ...) ou um JSON [{...}] aqui" aria-label="Área para colar CSV ou JSON"></textarea>
+    <div class="importrow">
+      <label for="import-scanner" style="font-size:13px;font-weight:600">Origem dos dados:</label>
+      <select id="import-scanner">
+        <option value="myp">MYP (preços em R$)</option>
+        <option value="ct">CardTrader (preços em US$)</option>
+      </select>
+      <button class="btn primary" id="btn-import">Importar</button>
+      <button class="btn" id="btn-demo">Ver exemplo (dados fictícios)</button>
+      <button class="btn" id="btn-clear">Limpar</button>
+    </div>
+    <div class="count-note" id="import-note">Nenhum dado carregado ainda.</div>
+    <div class="notice demo viewhide" id="demo-banner"><strong>DEMO — valores 100% fictícios.</strong> As linhas abaixo existem só para demonstrar a interface; nenhum preço é real e não há links de oferta. Importe um scan de verdade para trabalhar.</div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="panel">
+    <div class="eyebrow">Passo 2 — Filtros dinâmicos</div>
+    <h2>Refinar os deals</h2>
+    <p class="hint">Os filtros se aplicam na hora. Linhas reprovadas continuam visíveis (esmaecidas) — invariante da frota: mostrar todas as linhas, aprovadas e rejeitadas. Use “Ocultar reprovadas” se quiser ver só o que passa.</p>
+    <div class="filters">
+      <div class="field" style="margin-top:0">
+        <label for="fx-margin">Margem mínima (%)</label>
+        <div class="row">
+          <input type="range" id="fx-margin-r" min="0" max="100" step="1" value="30">
+          <input type="number" id="fx-margin" min="0" max="500" step="1" value="30">
+        </div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label id="fx-floor-label" for="fx-floor">Piso de preço (compra)</label>
+        <div class="row"><input type="number" id="fx-floor" min="0" step="1" value="50"></div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label for="fx-pmin">Faixa de preço de compra</label>
+        <div class="row">
+          <input type="number" id="fx-pmin" min="0" step="1" placeholder="mín" aria-label="Preço mínimo">
+          <span>—</span>
+          <input type="number" id="fx-pmax" min="0" step="1" placeholder="máx" aria-label="Preço máximo">
+        </div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label for="fx-name">Buscar por nome</label>
+        <input type="text" id="fx-name" placeholder="ex.: Umbreon">
+      </div>
+      <div class="field" style="margin-top:0">
+        <label>Raridade</label>
+        <div class="chips" id="fx-rarity"></div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label>Tipo de carta <span style="text-transform:none;font-weight:400">(heurístico, pelo nome)</span></label>
+        <div class="chips" id="fx-type"></div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label>Fonte do preço de referência</label>
+        <div class="chips" id="fx-source"></div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label>Status</label>
+        <div class="chips" id="fx-status"></div>
+      </div>
+      <div class="field" style="margin-top:0">
+        <label>Idioma / Condição</label>
+        <div class="chips">
+          <span class="chip" aria-pressed="true" style="cursor:default">EN</span>
+          <span class="chip" aria-pressed="true" style="cursor:default">NM</span>
+        </div>
+        <span class="conv" style="font-size:12px;color:var(--muted)">Invariantes da frota: os scanners só coletam inglês + Near Mint (match exato). Linhas fora disso nem entram no arquivo.</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Piso mínimo por carta (regras extras)</label>
+      <span class="conv" style="color:var(--muted);font-size:12.5px">Além do piso global: “se o nome contém X, exigir preço ≥ Y”. Ex.: exigir R$200 para “Charizard”. Só afeta a análise aqui — não muda o scan.</span>
+      <div class="row" style="margin-top:6px">
+        <input type="text" id="rule-text" placeholder="nome contém…" style="flex:1">
+        <input type="number" id="rule-floor" placeholder="piso" min="0" style="width:100px">
+        <button class="btn" id="rule-add">Adicionar</button>
+      </div>
+      <div class="rules" id="rules"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow">Distribuição</div>
+    <h2>Margens no conjunto filtrado</h2>
+    <p class="hint" id="hist-note">Cada barra é uma faixa de margem; barras cinzas estão abaixo da margem mínima atual.</p>
+    <div class="hist" id="hist" role="img" aria-label="Histograma de margens"></div>
+    <div class="histx" id="histx"></div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow">Passo 3 — Resultado</div>
+    <h2 id="table-title">Deals</h2>
+    <div class="toolrow">
+      <button class="btn" id="btn-hide-rej" aria-pressed="false">Ocultar reprovadas</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="btn-md">Copiar tabela (Markdown)</button>
+      <button class="btn" id="btn-csv">Baixar CSV</button>
+      <button class="btn" id="btn-json">Baixar JSON</button>
+    </div>
+    <div class="tablebox">
+      <table class="deals" id="table">
+        <thead><tr id="thead-row"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="count-note" id="table-note"></p>
+  </div>
+
+</section>
+
+<footer class="app">
+  <p><strong>Como este painel se encaixa no fluxo:</strong> 1) monte o comando aqui e rode o scanner no seu computador (ou pelo workflow do GitHub, no caso do MYP na nuvem); 2) exporte o XLSX do resultado como CSV; 3) importe aqui para filtrar, comparar e exportar.</p>
+  <p>Margem <strong>bruta</strong>, sem taxas embutidas — MYP: (TCG − compra) ÷ compra · CardTrader: (TCG − compra) ÷ TCG. Frete, câmbio e taxas você calcula por fora. O painel reporta dados e flags; <strong>a decisão de compra é sua</strong>.</p>
+  <p>Baseado nos repositórios <code>myp-arbitrage-scanner</code> e <code>card-trader-scanner</code> (skills <code>scan-myp</code> e <code>/scan</code>). Preço nunca é inventado: sem fonte real, a linha vem rotulada como fallback.</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ================= CATÁLOGOS (verbatim das skills scan-myp e /scan) ================= */
+const MYP_GROUPS=[
+ {id:1,era:"Mega Evolution + SV recente",dur:"~1h31",sets:[
+  {sub:"Mega",label:"Mega (todas as ME0x, incl. Phantasmal Flames)"},
+  {sub:"Ascended Heroes",label:"ME: Ascended Heroes"},
+  {sub:"Perfect Order",label:"ME: Perfect Order"},
+  {sub:"Chaos Rising",label:"ME: Chaos Rising"},
+  {sub:"Scarlet & Violet: Destined Rivals",label:"SV: Destined Rivals"},
+  {sub:"SV09: Journey Together",label:"SV09: Journey Together"},
+  {sub:"Prismatic Evolutions",label:"Prismatic Evolutions"},
+  {sub:"Surging Sparks",label:"Surging Sparks"},
+  {sub:"Stellar Crown",label:"Stellar Crown"},
+  {sub:"Shrouded Fable",label:"Shrouded Fable"},
+  {sub:"Twilight Masquerade",label:"Twilight Masquerade"},
+  {sub:"Temporal Forces",label:"Temporal Forces"}]},
+ {id:2,era:"SV restante + Black Bolt/White Flare + SWSH moderno",dur:"~1h38",sets:[
+  {sub:"Paldean Fates"},{sub:"Paradox Rift"},{sub:"Obsidian Flames"},
+  {sub:"151",label:"151 (Scarlet & Violet)"},{sub:"Paldea Evolved"},{sub:"Black Bolt"},{sub:"White Flare"},
+  {sub:"Crown Zenith"},{sub:"Silver Tempest"},{sub:"Lost Origin"},{sub:"Astral Radiance"},
+  {sub:"Brilliant Stars"},{sub:"Fusion Strike"},{sub:"Evolving Skies"}]},
+ {id:3,era:"SWSH antigo + Pokémon GO + SM recente",dur:"~2h20",sets:[
+  {sub:"Sword & Shield 6: Chilling Reign"},{sub:"Sword & Shield 5: Battle Styles"},{sub:"Shining Fates"},
+  {sub:"Sword & Shield 4: Vivid Voltage"},{sub:"Sword & Shield 3.5: Champion's Path"},
+  {sub:"Sword & Shield 3: Darkness Ablaze"},{sub:"Sword & Shield 2: Rebel Clash"},
+  {sub:"Celebrations: Classic Collection"},{sub:"Pokémon GO"},
+  {sub:"Sun & Moon 12: Cosmic Eclipse"},{sub:"Sun & Moon 11.5: Hidden Fates"},{sub:"Sun & Moon 11: Unified Minds"},
+  {sub:"Sun & Moon 10: Unbroken Bonds"},{sub:"Sun & Moon 9: Team Up"},{sub:"Sun & Moon 8: Lost Thunder"},
+  {sub:"Sun & Moon 7.5: Dragon Majesty"},{sub:"Sun & Moon 7: Celestial Storm"},{sub:"Sun & Moon 6: Forbidden Light"},
+  {sub:"Sun & Moon 5: Ultra Prism"},{sub:"Sun & Moon 4: Crimson Invasion"}]},
+ {id:4,era:"SM restante + XY + HGSS",dur:"~2h06",sets:[
+  {sub:"Sun & Moon 3.5: Shining Legends"},{sub:"Sun & Moon 3: Burning Shadows"},{sub:"Sun & Moon 2: Guardians Rising"},
+  {sub:"XY 12: Evolutions"},{sub:"XY 11: Steam Siege"},{sub:"XY 10: Fates Collide"},{sub:"XY 8: BREAKthrough"},
+  {sub:"XY 7: Ancient Origins"},{sub:"XY 6: Roaring Skies"},{sub:"XY 5: Primal Clash"},{sub:"XY 4: Phantom Forces"},
+  {sub:"XY 3: Furious Fists"},{sub:"XY 2: Flashfire"},{sub:"XY: Double Crisis"},{sub:"XY: Kalos Starter Set"},
+  {sub:"HeartGold & SoulSilver 2: Unleashed"},{sub:"HeartGold & SoulSilver 3: Undaunted"},{sub:"HeartGold & SoulSilver 4: Triumphant"}]},
+ {id:5,era:"BW + DP/Platinum + EX final",dur:"~2h27",sets:[
+  {sub:"Black & White 2: Emerging Powers"},{sub:"Black & White 3: Noble Victories"},{sub:"Black & White 4: Next Destinies"},
+  {sub:"Black & White 5: Dark Explorers"},{sub:"Black & White 6: Dragons Exalted"},{sub:"Black & White 7: Boundaries Crossed"},
+  {sub:"Black & White 8: Plasma Storm"},{sub:"Black & White 9: Plasma Freeze"},{sub:"Black & White 10: Plasma Blast"},
+  {sub:"Black & White: Dragon Vault"},{sub:"Platinum 3: Supreme Victors"},{sub:"Platinum 4: Arceus"},
+  {sub:"Mysterious Treasures"},{sub:"Secret Wonders"},{sub:"Great Encounters"},{sub:"Majestic Dawn"},
+  {sub:"Legends Awakened"},{sub:"Diamond & Pearl 7: Stormfront"},
+  {sub:"EX 16: Power Keepers"},{sub:"EX 15: Dragon Frontiers"},{sub:"EX 14: Crystal Guardians"}]},
+ {id:6,era:"EX restante + e-Card + WOTC",dur:"~2h34",sets:[
+  {sub:"EX 1: Ruby & Sapphire"},{sub:"EX 2: Sandstorm"},{sub:"EX 3: Dragon"},{sub:"EX 4: Team Magma vs Team Aqua"},
+  {sub:"EX 5: Hidden Legends"},{sub:"EX 6: Fire Red & Leaf Green"},{sub:"EX 8: Deoxys"},{sub:"EX 9: Emerald"},
+  {sub:"EX 10: Unseen Forces"},{sub:"EX 11: Delta Species"},{sub:"EX 12: Legend Maker"},{sub:"EX 13: Holon Phantoms"},
+  {sub:"E-Card 1: Expedition Base Set"},{sub:"E-Card 2: Aquapolis"},{sub:"E-Card 3: Skyridge"},
+  {sub:"Neo Genesis"},{sub:"Neo Discovery"},{sub:"Neo Revelation"},{sub:"Neo Destiny"},
+  {sub:"Gym Heroes"},{sub:"Gym Challenge"},{sub:"Legendary Collection"}]}
+];
+const CT_GROUPS=[
+ {id:1,era:"Mega Evolution + era SV",dur:"~1h35–2h",sets:[
+  ["meg","Mega Evolution (base)"],["pfl","Phantasmal Flames"],["asc","Ascended Heroes"],["por","Perfect Order"],
+  ["cri","Chaos Rising"],["blk","Black Bolt"],["wht","White Flare"],["dri","Destined Rivals"],
+  ["pre","Prismatic Evolutions"],["jtg","Journey Together"],["ssp","Surging Sparks"],["scr","Stellar Crown"],
+  ["sfa","Shrouded Fable"],["twm","Twilight Masquerade"],["tef","Temporal Forces"],["paf","Paldean Fates"],
+  ["par","Paradox Rift"],["mew","151"],["obf","Obsidian Flames"],["pal","Paldea Evolved"],["svi","Scarlet & Violet (base)"]]},
+ {id:2,era:"SWSH + Pokémon GO + Detective Pikachu + SM final",dur:"~1h35–2h",sets:[
+  ["crz","Crown Zenith"],["sit","Silver Tempest"],["lorg","Lost Origin"],["astr","Astral Radiance"],
+  ["brs","Brilliant Stars"],["fst","Fusion Strike"],["evs","Evolving Skies"],["cre","Chilling Reign"],
+  ["bst","Battle Styles"],["shf","Shining Fates"],["viv","Vivid Voltage"],["cpa","Champion's Path"],
+  ["daa","Darkness Ablaze"],["rcl","Rebel Clash"],["ssh","Sword & Shield (base)"],["pkmgo","Pokémon GO"],
+  ["det","Detective Pikachu"],["cec","Cosmic Eclipse"],["unm","Unified Minds"],["hif","Hidden Fates"],["teu","Team Up"]]},
+ {id:3,era:"SM restante + XY final",dur:"~1h35–2h",sets:[
+  ["unb","Unbroken Bonds"],["lot","Lost Thunder"],["drm","Dragon Majesty"],["ces","Celestial Storm"],
+  ["fli","Forbidden Light"],["upr","Ultra Prism"],["cinv","Crimson Invasion"],["bus","Burning Shadows"],
+  ["slg","Shining Legends"],["gri","Guardians Rising"],["sum","Sun & Moon (base)"],["evo","Evolutions"],
+  ["sts","Steam Siege"],["fco","Fates Collide"],["bkp","BREAKpoint"],["bkt","BREAKthrough"],
+  ["aor","Ancient Origins"],["gen","Generations"],["ros","Roaring Skies"],["prc","Primal Clash"],["dcr","Double Crisis"]]},
+ {id:4,era:"XY inicial + BW + HGSS",dur:"~1h35–2h",sets:[
+  ["phf","Phantom Forces"],["ffi","Furious Fists"],["flf","Flashfire"],["kss","Kalos Starter Set"],
+  ["xybsp","XY Black Star Promos"],["ltr","Legendary Treasures"],["plb","Plasma Blast"],["plf","Plasma Freeze"],
+  ["pls","Plasma Storm"],["bcr","Boundaries Crossed"],["drx","Dragons Exalted"],["dex","Dark Explorers"],
+  ["nxd","Next Destinies"],["nvi","Noble Victories"],["epo","Emerging Powers"],["blw","Black & White (base)"],
+  ["drv","Dragon Vault"],["tri","Triumphant"],["und","Undaunted"],["ul","Unleashed"],["hgs","HeartGold & SoulSilver"]]},
+ {id:5,era:"Call of Legends + DP + Platinum + EX tardio",dur:"~1h50–2h15 (tem sets lentos)",sets:[
+  ["clo","Call of Legends"],["sft","Stormfront"],["ge","Great Encounters"],["sw","Secret Wonders"],
+  ["mt","Mysterious Treasures"],["pdp","Promo Diamond & Pearl"],["sv","Supreme Victors"],["rr","Rising Rivals"],
+  ["pl","Platinum (base)"],["nbsp","Nintendo Black Star Promos"],["pk","Power Keepers"],["df","Dragon Frontiers"],
+  ["cg","Crystal Guardians"],["hp","Holon Phantoms"],["lm","Legend Maker"],["ds","Delta Species"],
+  ["uf","Unseen Forces"],["em","Emerald"],["dx","Deoxys"],["trr","Team Rocket Returns"],
+  ["rg","FireRed & LeafGreen"],["hl","Hidden Legends"]]},
+ {id:6,era:"EX inicial + e-Card + WotC",dur:"~1h50–2h15",sets:[
+  ["exma","Team Magma vs Team Aqua"],["dr","EX Dragon"],["ss","Sandstorm"],["rs","Ruby & Sapphire"],
+  ["skg","Skyridge"],["aq","Aquapolis"],["ex","Expedition Base Set"],["lc","Legendary Collection"],
+  ["si","Southern Islands"],["n4","Neo Destiny"],["n3","Neo Revelation"],["n2","Neo Discovery"],
+  ["n1","Neo Genesis"],["g2","Gym Challenge"],["g1","Gym Heroes"],["tr","Team Rocket"],
+  ["b2","Base Set 2"],["fo","Fossil"],["ju","Jungle"],["bs","Base Set"],
+  ["wiz","WotC Promos"],["bog","Best of Game"]]}
+];
+const SPECIAL_ART_RX=/illustration|special art|art rare|hyper|secret|rara hiper|rara secreta|\bSIR\b|\bSAR\b|\bIR\b/i;
+
+/* ================= DEMO (valores FICTÍCIOS — só para demonstrar a interface) ================= */
+const DEMO_MYP=[
+ {name:"Pikachu ex",number:"238/191",set:"SV08: Surging Sparks",rarity:"Special Art Rare",buy:850,ref:1595,refUsd:290,qty:2,source:"tcgcsv"},
+ {name:"Umbreon ex",number:"161/131",set:"Prismatic Evolutions",rarity:"Special Art Rare",buy:2400,ref:3390,refUsd:616,qty:1,source:"tcgcsv"},
+ {name:"Charizard ex",number:"223/197",set:"SV03: Obsidian Flames",rarity:"Special Art Rare",buy:780,ref:1050,refUsd:191,qty:3,source:"pokemontcg.io"},
+ {name:"Iono",number:"237/193",set:"SV02: Paldea Evolved",rarity:"Special Art Rare",buy:690,ref:940,refUsd:171,qty:2,source:"tcgcsv"},
+ {name:"Squirtle",number:"148/165",set:"SV: 151",rarity:"Illustration Rare",buy:145,ref:210,refUsd:38,qty:4,source:"tcgcsv"},
+ {name:"Greninja ex",number:"214/167",set:"Twilight Masquerade",rarity:"Special Art Rare",buy:480,ref:630,refUsd:115,qty:1,source:"pokemontcg.io"},
+ {name:"Gardevoir ex",number:"233/198",set:"Scarlet & Violet (base)",rarity:"Special Art Rare",buy:310,ref:400,refUsd:73,qty:2,source:"tcgcsv"},
+ {name:"Latias ex",number:"239/191",set:"SV08: Surging Sparks",rarity:"Special Art Rare",buy:520,ref:700,refUsd:null,qty:1,source:".estat-tcg"},
+ {name:"Mega Lucario ex",number:"226/217",set:"ME: Ascended Heroes",rarity:"Comum",buy:900,ref:1400,refUsd:255,qty:1,source:"tcgcsv",flagSupra:true},
+ {name:"N's Zoroark ex",number:"185/159",set:"SV09: Journey Together",rarity:"Ultra Rare",buy:350,ref:980,refUsd:178,qty:2,source:"tcgcsv",flagSuspect:true},
+ {name:"Eevee",number:"133/165",set:"SV: 151",rarity:"Comum",buy:18,ref:35,refUsd:6,qty:9,source:"tcgcsv"},
+ {name:"Terapagos ex",number:"222/167",set:"Stellar Crown",rarity:"Special Art Rare",buy:610,ref:640,refUsd:116,qty:1,source:"pokemontcg.io"},
+ {name:"Roaring Moon ex",number:"251/182",set:"SV04: Paradox Rift",rarity:"Hyper Rare",buy:265,ref:410,refUsd:75,qty:3,source:"tcgcsv"},
+ {name:"Basic Grass Energy",number:"9/9",set:"ME: Perfect Order",rarity:"Rara",buy:95,ref:130,refUsd:24,qty:5,source:"tcgcsv"}
+];
+const DEMO_CT=[
+ {name:"Pikachu ex",number:"238/191",set:"ssp",rarity:"Special Illustration Rare",buy:95,ref:160,qty:2,source:"pokemontcg.io"},
+ {name:"Umbreon ex",number:"161/131",set:"pre",rarity:"Special Illustration Rare",buy:380,ref:560,qty:1,source:"pokemontcg.io"},
+ {name:"Milotic ex",number:"217/167",set:"twm",rarity:"Special Illustration Rare",buy:38,ref:62,qty:2,source:"pokemontcg.io"},
+ {name:"Iron Hands ex",number:"223/182",set:"par",rarity:"Ultra Rare",buy:6.5,ref:11,qty:4,source:"pokemontcg.io"},
+ {name:"Mega Gardevoir ex",number:"201/188",set:"meg",rarity:"Special Illustration Rare",buy:78,ref:118,qty:1,source:"tcgcsv"},
+ {name:"Salamence ex",number:"187/159",set:"jtg",rarity:"Special Illustration Rare",buy:44,ref:60,qty:2,source:"pokemontcg.io"},
+ {name:"Charizard",number:"TG03/TG30",set:"brs",rarity:"Holo Rare",buy:18,ref:95,qty:1,source:"pokemontcg.io",flagSuspect:true},
+ {name:"Lileep",number:"56/100",set:"lm",rarity:"Comum",buy:0.9,ref:37.5,qty:3,source:"pokemontcg.io",flagVariant:true},
+ {name:"Pikachu with Grey Felt Hat",number:"85",set:"svp",rarity:"Promo",buy:210,ref:290,qty:1,source:"pokemontcg.io"},
+ {name:"Alakazam",number:"1/102",set:"bs",rarity:"Holo Rare",buy:62,ref:84,qty:1,source:"pokemontcg.io"},
+ {name:"Blaziken VMAX",number:"20/198",set:"cre",rarity:"Ultra Rare",buy:9.8,ref:12,qty:2,source:"pokemontcg.io"},
+ {name:"Giratina V",number:"186/196",set:"lorg",rarity:"Ultra Rare",buy:74,ref:96,qty:1,source:"pokemontcg.io"}
+];
+
+/* ================= ESTADO ================= */
+const state={
+  scanner:"myp", view:"config",
+  sel:{myp:new Set(), ct:new Set()},
+  params:{
+    myp:{margin:30,floor:50,delay:1.5},
+    ct:{margin:30,floor:10,validate:30}
+  },
+  rows:[], dataScanner:"myp", isDemo:false,
+  fx:{margin:30,floor:50,pmin:null,pmax:null,name:"",rarity:new Set(),type:new Set(),source:new Set(),status:new Set()},
+  rules:[], hideRej:false,
+  sort:{key:"margin",dir:-1}
+};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ================= CONFIG: grupos + sets ================= */
+function renderGroups(){
+  const host=$("groups");
+  const openState={};
+  host.querySelectorAll("details.group").forEach(d=>{openState[d.dataset.g]=d.open;});
+  host.innerHTML="";
+  const groups=state.scanner==="myp"?MYP_GROUPS:CT_GROUPS;
+  const sel=state.sel[state.scanner];
+  groups.forEach(g=>{
+    const items=state.scanner==="myp"
+      ? g.sets.map(s=>({key:s.sub,main:s.label||s.sub,code:null}))
+      : g.sets.map(([c,n])=>({key:c,main:n,code:c}));
+    const nSel=items.filter(i=>sel.has(i.key)).length;
+    const d=document.createElement("details"); d.className="group"; d.dataset.g=g.id;
+    d.open=(g.id in openState)?openState[g.id]:(g.id===1);
+    d.innerHTML=`<summary><span class="chev">▶</span><span class="gname">Grupo ${g.id}</span>
+      <span class="gmeta">${esc(g.era)} · ${esc(g.dur)}</span>
+      <span class="gcount">${nSel}/${items.length}</span>
+      <button type="button" class="gbtn" data-g="${g.id}" data-act="all">tudo</button>
+      <button type="button" class="gbtn" data-g="${g.id}" data-act="none">nada</button></summary>
+      <div class="setlist">${items.map(i=>`<label><input type="checkbox" data-key="${esc(i.key)}" ${sel.has(i.key)?"checked":""}>
+        <span>${esc(i.main)}${i.code?` <span class="code">${esc(i.code)}</span>`:""}</span></label>`).join("")}</div>`;
+    host.appendChild(d);
+  });
+  host.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.addEventListener("change",()=>{
+    const k=cb.dataset.key; cb.checked?sel.add(k):sel.delete(k); renderGroups(); renderCmd();
+  }));
+  host.querySelectorAll(".gbtn").forEach(b=>b.addEventListener("click",e=>{
+    e.preventDefault(); e.stopPropagation();
+    const g=groups.find(x=>x.id==b.dataset.g);
+    const keys=state.scanner==="myp"?g.sets.map(s=>s.sub):g.sets.map(([c])=>c);
+    if(b.dataset.act==="all")keys.forEach(k=>sel.add(k)); else keys.forEach(k=>sel.delete(k));
+    renderGroups(); renderCmd();
+  }));
+}
+
+function quoteArg(s){return /[\s&']/.test(s)?`"${s}"`:s;}
+function stamp(){const d=new Date();const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
+
+function renderCmd(){
+  const p=state.params[state.scanner];
+  const sel=[...state.sel[state.scanner]];
+  const marginPct=p.margin;
+  if(state.scanner==="myp"){
+    $("cfg-eyebrow").textContent="Scanner MYP — mypcards.com → TCGplayer";
+    $("cfg-hint").innerHTML=`Escolha os sets abaixo (os 6 grupos são os mesmos da skill <code>scan-myp</code>, dimensionados para ≤ ~2h30 cada). O comando pronto aparece ao lado — é só copiar e rodar. O app converte a margem para a convenção certa do scanner sozinho.`;
+    $("p-margin-conv").innerHTML=`No MYP o threshold é <b>inteiro</b>: ${marginPct}% → <b>--threshold ${marginPct}</b>`;
+    $("p-floor-label").textContent="Piso de preço (R$)";
+    $("p-floor-note").textContent="padrão da frota: R$50 (~US$10) para cartas avulsas";
+    $("f-delay").classList.remove("viewhide"); $("f-validate").classList.add("viewhide");
+    const ed=sel.length?sel.map(quoteArg).join(" "):"<escolha os sets à esquerda>";
+    $("cmd1").textContent=
+`python myp_arbitrage_scanner.py \\
+  --editions ${ed} \\
+  --threshold ${marginPct} --min-price ${p.floor} --delay ${p.delay} \\
+  -o results/scan_myp_${stamp()}.xlsx --resume`;
+    $("cmd2").textContent=
+`python myp_summary.py results/scan_myp_${stamp()}.xlsx \\
+  --type daily -o results/scan_myp_${stamp()}.md`;
+    $("cmd1-title").textContent="Comando do scan (rota local)";
+    $("cmd2-title").textContent="Entrega (myp_summary.py — tabela oficial)";
+    $("cfg-warn").innerHTML=`<strong>Regras que não mudam:</strong> um grupo por vez, nunca 2 scans no mesmo IP (403 Cloudflare); <code>--resume</code> retoma se o scan morrer. Na nuvem, use o workflow <code>Quick MYP Scan (chunked)</code> no GitHub com estas mesmas edições — o container não roda o scraper.`;
+  }else{
+    $("cfg-eyebrow").textContent="Scanner CardTrader — cardtrader.com → TCGplayer";
+    $("cfg-hint").innerHTML=`Escolha os sets abaixo (os 6 grupos são os mesmos da skill <code>/scan</code> do repo, códigos CardTrader verbatim, ≤ ~2h30 cada). O comando pronto aparece ao lado. O app converte a margem para <strong>fração</strong> sozinho — a pegadinha nº 1 deste scanner.`;
+    const frac=(marginPct/100).toFixed(2);
+    $("p-margin-conv").innerHTML=`No CardTrader o threshold é <b>fração</b>: ${marginPct}% → <b>--threshold ${frac}</b> (escrever ${marginPct} viraria ${marginPct*100}% e zeraria os achados)`;
+    $("p-floor-label").textContent="Piso de preço (US$)";
+    $("p-floor-note").textContent="padrão ≈ US$10; subir o piso esconde a faixa onde a maioria dos deals mora";
+    $("f-delay").classList.add("viewhide"); $("f-validate").classList.remove("viewhide");
+    const sets=sel.length?sel.join(" "):"<escolha os sets à esquerda>";
+    const floorFlag=(Number(p.floor)!==10)?` --min-price-usd ${p.floor}`:"";
+    $("cmd1").textContent=
+`python cardtrader_scanner.py \\
+  --sets ${sets} \\
+  --threshold ${frac} --validate-top ${p.validate} --min-net-margin 0.20${floorFlag} \\
+  --output outputs/scan_ct_${stamp()}.xlsx`;
+    $("cmd2").textContent=
+`python cardtrader_postprocess.py \\
+  --input outputs/scan_ct_${stamp()}.xlsx \\
+  --output outputs/relatorio_ct_${stamp()}.xlsx --top-md 50`;
+    $("cmd1-title").textContent="Comando do scan";
+    $("cmd2-title").textContent="Entrega (postprocess — tabela oficial)";
+    $("cfg-warn").innerHTML=`<strong>Regras que não mudam:</strong> grupos em sequência, nunca 2 scanners na mesma pasta de estado; <code>--validate-top</code> sempre ligado (sem ele ~76% dos achados eram falsos). Sets vintage lentos (df, ds, n1, n4) já têm timeout interno maior.`;
+  }
+}
+
+/* ================= NORMALIZAÇÃO / IMPORT ================= */
+const COLMAP=[
+ [/^(card ?name|nome|carta|name)$/i,"name"],
+ [/^(card[_ ]?number|n[úu]mero|number|num)$/i,"number"],
+ [/^(edition|set|set[_ ]?code|edi[çc][ãa]o|expansion)$/i,"set"],
+ [/^(rarity|raridade)$/i,"rarity"],
+ [/^(myp en nm \(r\$\)|live[_ ]?brl|ct ?us\$|pre[çc]o|price|buy|compra|oferta)$/i,"buy"],
+ [/^(tcg ?player \(r\$\)|reference[_ ]?price[_ ]?brl|tcg ?r\$|ref)$/i,"refBrl"],
+ [/^(tcg ?us\$|tcg ?usd|reference[_ ]?price[_ ]?usd)$/i,"refUsd"],
+ [/^(margin ?%?|margem ?%?|net[_ ]?margin)$/i,"margin"],
+ [/^(diff.*|dif.*)$/i,"diff"],
+ [/^(nm ?sellers|qtd|quantity|qty)$/i,"qty"],
+ [/^(tcg ?source|price[_ ]?source|fonte ?pre[çc]o|fonte)$/i,"source"],
+ [/^(url|link|oferta[_ ]?url)$/i,"url"],
+ [/^(tcg ?url|tcg[_ ]?link)$/i,"tcgUrl"],
+ [/^(cond|condition|condi[çc][ãa]o)$/i,"cond"],
+ [/^(language|idioma|lang)$/i,"lang"],
+ [/collector#|supranumer/i,"flagSupra"],
+ [/tcg ?suspect/i,"flagSuspect"],
+ [/variante ?baixa|low ?confidence/i,"flagVariant"]
+];
+function mapHeader(h){
+  h=String(h).replace(/^﻿/,"").replace(/⚠️/g,"").trim();
+  for(const [rx,key] of COLMAP){ if(rx.test(h)) return key; }
+  return null;
+}
+function parseNum(v){
+  if(v==null||v==="")return null;
+  if(typeof v==="number")return v;
+  let s=String(v).replace(/[R$US\s%]/g,"").trim();
+  if(/,\d{1,2}$/.test(s)) s=s.replace(/\./g,"").replace(",",".");
+  else s=s.replace(/,/g,"");
+  const n=parseFloat(s); return isNaN(n)?null:n;
+}
+function parseCSV(text){
+  const sep=[",",";","\t"].map(s=>({s,n:(text.split("\n")[0].match(new RegExp("\\"+s,"g"))||[]).length}))
+    .sort((a,b)=>b.n-a.n)[0].s;
+  const rows=[];let cur=[],field="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+    else if(c==='"')inQ=true;
+    else if(c===sep){cur.push(field);field="";}
+    else if(c==="\n"||c==="\r"){ if(c==="\r"&&text[i+1]==="\n")i++; cur.push(field);field=""; if(cur.some(x=>x.trim()!==""))rows.push(cur); cur=[]; }
+    else field+=c;
+  }
+  if(field!==""||cur.length){cur.push(field); if(cur.some(x=>x.trim()!==""))rows.push(cur);}
+  return rows;
+}
+function normalizeRows(raw,scanner){
+  return raw.map(r=>{
+    const buy=parseNum(r.buy), refBrl=parseNum(r.refBrl), refUsd=parseNum(r.refUsd);
+    const ref=scanner==="myp"?(refBrl??refUsd):(refUsd??refBrl??parseNum(r.ref));
+    let margin=parseNum(r.margin);
+    let computed=false;
+    if(margin==null&&buy!=null&&ref!=null&&buy>0&&ref>0){
+      margin=scanner==="myp"?(ref-buy)/buy*100:(ref-buy)/ref*100; computed=true;
+    }
+    const src=String(r.source||"").toLowerCase();
+    const fallback=src.includes("estat")||src.includes("fallback");
+    return {
+      name:String(r.name||"").trim(), number:String(r.number||"").trim(),
+      set:String(r.set||"").trim(), rarity:String(r.rarity||"").trim()||"—",
+      buy, ref, refUsd, margin, qty:parseNum(r.qty),
+      source:r.source?String(r.source).trim():"", fallback,
+      url:String(r.url||"").trim(), tcgUrl:String(r.tcgUrl||"").trim(),
+      cond:String(r.cond||"NM").trim()||"NM", lang:String(r.lang||"EN").trim()||"EN",
+      flagSupra:!!r.flagSupra&&String(r.flagSupra)!=="false"&&String(r.flagSupra).trim()!=="",
+      flagSuspect:!!r.flagSuspect&&String(r.flagSuspect)!=="false"&&String(r.flagSuspect).trim()!=="",
+      flagVariant:!!r.flagVariant&&String(r.flagVariant)!=="false"&&String(r.flagVariant).trim()!=="",
+      marginComputed:computed
+    };
+  }).filter(r=>r.name&&(r.buy!=null||r.margin!=null));
+}
+// Heurística dataset-level: margens todas ≤3 → provavelmente fração → ×100
+function fixMarginScale(rows){
+  const ms=rows.map(r=>r.margin).filter(m=>m!=null&&!isNaN(m));
+  if(ms.length&&ms.every(m=>Math.abs(m)<=3)) rows.forEach(r=>{if(r.margin!=null)r.margin*=100;});
+}
+function importText(){
+  const t=$("paste").value.trim();
+  if(!t){$("import-note").textContent="Nada para importar — cole o CSV ou JSON primeiro.";return;}
+  const scanner=$("import-scanner").value;
+  let raw=[];
+  try{
+    if(t[0]==="["||t[0]==="{"){
+      const j=JSON.parse(t); const arr=Array.isArray(j)?j:[j];
+      raw=arr.map(o=>{const m={};for(const k in o){const key=mapHeader(k);if(key)m[key]=o[k];}return m;});
+    }else{
+      const rows=parseCSV(t);
+      if(rows.length<2){$("import-note").textContent="CSV precisa de cabeçalho + pelo menos 1 linha.";return;}
+      const keys=rows[0].map(mapHeader);
+      raw=rows.slice(1).map(cells=>{const m={};cells.forEach((v,i)=>{if(keys[i])m[keys[i]]=v;});return m;});
+    }
+  }catch(e){$("import-note").textContent="Não consegui ler: "+e.message;return;}
+  const rows=normalizeRows(raw,scanner);
+  fixMarginScale(rows);
+  if(!rows.length){$("import-note").textContent="Nenhuma linha reconhecida — confira se o cabeçalho tem as colunas do scanner (Card Name, Edition, ...).";return;}
+  state.rows=rows; state.dataScanner=scanner; state.isDemo=false;
+  $("demo-banner").classList.add("viewhide");
+  const nComputed=rows.filter(r=>r.marginComputed).length;
+  $("import-note").textContent=`${rows.length} linha(s) importadas (${scanner==="myp"?"MYP, R$":"CardTrader, US$"}).`+(nComputed?` Margem calculada a partir dos preços em ${nComputed} linha(s) (coluna ausente).`:"");
+  syncExploreDefaults(); buildFilterChips(); renderExplore();
+}
+function loadDemo(){
+  const scanner=state.scanner;
+  const demo=scanner==="myp"?DEMO_MYP:DEMO_CT;
+  state.rows=demo.map(d=>({
+    name:d.name,number:d.number,set:d.set,rarity:d.rarity,
+    buy:d.buy,ref:d.ref,refUsd:scanner==="myp"?(d.refUsd??null):d.ref,
+    margin:scanner==="myp"?(d.ref-d.buy)/d.buy*100:(d.ref-d.buy)/d.ref*100,
+    qty:d.qty,source:d.source,fallback:d.source===".estat-tcg",
+    url:"",tcgUrl:"",cond:"NM",lang:"EN",
+    flagSupra:!!d.flagSupra,flagSuspect:!!d.flagSuspect,flagVariant:!!d.flagVariant,marginComputed:false
+  }));
+  state.dataScanner=scanner; state.isDemo=true;
+  $("demo-banner").classList.remove("viewhide");
+  $("import-note").textContent=`${state.rows.length} linhas DEMO carregadas (${scanner==="myp"?"formato MYP, R$":"formato CardTrader, US$"}). Valores fictícios.`;
+  syncExploreDefaults(); buildFilterChips(); renderExplore();
+}
+
+/* ================= EXPLORER: filtros, status, render ================= */
+function cardType(name){
+  if(/\bex\b/i.test(name)&&!/\bexped/i.test(name))return "ex";
+  if(/\bV(MAX|STAR|-UNION)\b/.test(name)||/\sV$/.test(name)||/\sV\s/.test(name))return "V / VMAX / VSTAR";
+  if(/\bGX\b/.test(name))return "GX";
+  if(/energy|energia/i.test(name))return "Energia";
+  if(/\b(trainer|supporter)\b/i.test(name))return "Treinador";
+  return "Demais";
+}
+function money(v){
+  if(v==null||isNaN(v))return "—";
+  const cur=state.dataScanner==="myp"?"R$":"US$";
+  return cur+" "+v.toLocaleString(state.dataScanner==="myp"?"pt-BR":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function rowStatus(r){
+  const floor=effectiveFloor(r);
+  if(r.buy!=null&&r.buy<floor)return {cls:"bad",label:"< piso",rej:true};
+  if(r.margin==null)return {cls:"warn",label:"sem margem",rej:true};
+  if(r.margin<state.fx.margin)return {cls:"bad",label:"< margem",rej:true};
+  if(r.fallback||r.flagSupra||r.flagSuspect||r.flagVariant)return {cls:"warn",label:"validar",rej:false};
+  return {cls:"ok",label:"ok",rej:false};
+}
+function statusReason(r){
+  const parts=[];
+  if(r.fallback)parts.push("preço de referência é fallback (estimativa, não o TCGplayer real)");
+  if(r.flagSupra)parts.push("supranumerário (nº > total do set — raridade provavelmente errada)");
+  if(r.flagSuspect)parts.push("preço TCG destoa da última venda (mapeamento suspeito)");
+  if(r.flagVariant)parts.push("variante de baixa confiança (preço pode ser da versão errada)");
+  return parts.join("; ");
+}
+function effectiveFloor(r){
+  let f=Number(state.fx.floor)||0;
+  for(const rule of state.rules){
+    if(rule.text&&r.name.toLowerCase().includes(rule.text.toLowerCase())) f=Math.max(f,rule.floor);
+  }
+  return f;
+}
+function passesFilters(r){
+  const fx=state.fx;
+  if(fx.name&&!r.name.toLowerCase().includes(fx.name.toLowerCase()))return false;
+  if(fx.pmin!=null&&(r.buy==null||r.buy<fx.pmin))return false;
+  if(fx.pmax!=null&&(r.buy==null||r.buy>fx.pmax))return false;
+  if(fx.rarity.size&&!fx.rarity.has(r.rarity)){
+    if(!(fx.rarity.has("✦ Arte especial")&&SPECIAL_ART_RX.test(r.rarity)))return false;
+  }
+  if(fx.type.size&&!fx.type.has(cardType(r.name)))return false;
+  if(fx.source.size){
+    const s=r.fallback?"fallback":"real";
+    if(!fx.source.has(s))return false;
+  }
+  if(fx.status.size){
+    const st=rowStatus(r);
+    const key=st.label==="ok"?"ok":(st.label==="validar"?"validar":"reprovada");
+    if(!fx.status.has(key))return false;
+  }
+  return true;
+}
+function syncExploreDefaults(){
+  state.fx.floor=state.dataScanner==="myp"?50:10;
+  $("fx-floor").value=state.fx.floor;
+  $("fx-floor-label").textContent=`Piso de preço (compra, ${state.dataScanner==="myp"?"R$":"US$"})`;
+}
+function chip(label,pressed,extra){return `<button type="button" class="chip ${extra||""}" aria-pressed="${pressed}">${esc(label)}</button>`;}
+function buildFilterChips(){
+  const rar=[...new Set(state.rows.map(r=>r.rarity).filter(Boolean))].sort();
+  $("fx-rarity").innerHTML=chip("✦ Arte especial",state.fx.rarity.has("✦ Arte especial"))+
+    rar.map(r=>chip(r,state.fx.rarity.has(r))).join("");
+  const types=[...new Set(state.rows.map(r=>cardType(r.name)))].sort();
+  $("fx-type").innerHTML=types.map(t=>chip(t,state.fx.type.has(t))).join("");
+  $("fx-source").innerHTML=chip("real",state.fx.source.has("real"),"stat-ok")+chip("fallback",state.fx.source.has("fallback"),"stat-warn");
+  $("fx-status").innerHTML=chip("ok",state.fx.status.has("ok"),"stat-ok")+chip("validar",state.fx.status.has("validar"),"stat-warn")+chip("reprovada",state.fx.status.has("reprovada"),"stat-bad");
+  [["fx-rarity","rarity"],["fx-type","type"],["fx-source","source"],["fx-status","status"]].forEach(([id,key])=>{
+    $(id).querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+      const label=c.textContent;
+      const set=state.fx[key];
+      set.has(label)?set.delete(label):set.add(label);
+      c.setAttribute("aria-pressed",set.has(label));
+      renderExplore();
+    }));
+  });
+}
+function renderRules(){
+  $("rules").innerHTML=state.rules.map((r,i)=>
+    `<div class="rule"><span>nome contém <strong>${esc(r.text)}</strong> → piso ${esc(money(r.floor))}</span>
+     <button type="button" class="del" data-i="${i}" aria-label="Remover regra">×</button></div>`).join("")||"";
+  $("rules").querySelectorAll(".del").forEach(b=>b.addEventListener("click",()=>{
+    state.rules.splice(Number(b.dataset.i),1); renderRules(); renderExplore();
+  }));
+}
+
+const COLS=[
+ {key:"idx",label:"#",sort:false},
+ {key:"margin",label:"Margem %",sort:true},
+ {key:"buy",label:"Compra",sort:true},
+ {key:"ref",label:"Ref. TCG",sort:true},
+ {key:"diff",label:"Dif",sort:true},
+ {key:"name",label:"Carta",sort:true},
+ {key:"set",label:"Set",sort:true},
+ {key:"rarity",label:"Raridade",sort:true},
+ {key:"type",label:"Tipo",sort:false},
+ {key:"qty",label:"Qtd",sort:true},
+ {key:"source",label:"Fonte",sort:false},
+ {key:"status",label:"Status",sort:false},
+ {key:"links",label:"Links",sort:false}
+];
+function sortRows(rows){
+  const {key,dir}=state.sort;
+  const val=r=>{
+    if(key==="diff")return (r.ref!=null&&r.buy!=null)?r.ref-r.buy:-Infinity;
+    if(key==="name")return r.name.toLowerCase();
+    if(key==="set")return r.set.toLowerCase();
+    if(key==="rarity")return r.rarity.toLowerCase();
+    const v=r[key];return v==null?-Infinity:(typeof v==="string"?v.toLowerCase():v);
+  };
+  return rows.slice().sort((a,b)=>{const A=val(a),B=val(b);return A<B?-dir:(A>B?dir:0);});
+}
+function renderExplore(){
+  const all=state.rows;
+  const filtered=all.filter(passesFilters);
+  const withStatus=filtered.map(r=>({r,st:rowStatus(r)}));
+  const approved=withStatus.filter(x=>!x.st.rej);
+  // tiles
+  const margins=approved.map(x=>x.r.margin).filter(m=>m!=null).sort((a,b)=>a-b);
+  const med=margins.length?margins[Math.floor(margins.length/2)]:null;
+  const best=margins.length?margins[margins.length-1]:null;
+  const nWarn=approved.filter(x=>x.st.label==="validar").length;
+  $("tiles").innerHTML=
+    `<div class="tile"><div class="k">Linhas carregadas</div><div class="v">${all.length}</div></div>
+     <div class="tile acc"><div class="k">Passam nos filtros</div><div class="v">${approved.length}<small> / ${filtered.length}</small></div></div>
+     <div class="tile"><div class="k">Margem mediana</div><div class="v">${med==null?"—":med.toFixed(1)+"%"}</div></div>
+     <div class="tile"><div class="k">Melhor margem</div><div class="v">${best==null?"—":best.toFixed(1)+"%"}</div></div>
+     <div class="tile"><div class="k">Marcadas “validar”</div><div class="v">${nWarn}</div></div>`;
+  // histogram
+  renderHist(filtered);
+  // table
+  const visible=state.hideRej?withStatus.filter(x=>!x.st.rej):withStatus;
+  const sorted=sortRows(visible.map(x=>x.r));
+  const stOf=new Map(withStatus.map(x=>[x.r,x.st]));
+  $("thead-row").innerHTML=COLS.map(c=>{
+    if(!c.sort)return `<th scope="col">${c.label}</th>`;
+    const arr=state.sort.key===c.key?(state.sort.dir===-1?" ▼":" ▲"):"";
+    return `<th scope="col" class="sortable" data-key="${c.key}">${c.label}<span class="arr">${arr}</span></th>`;
+  }).join("");
+  $("thead-row").querySelectorAll(".sortable").forEach(th=>th.addEventListener("click",()=>{
+    const k=th.dataset.key;
+    if(state.sort.key===k)state.sort.dir*=-1;else{state.sort.key=k;state.sort.dir=-1;}
+    renderExplore();
+  }));
+  $("tbody").innerHTML=sorted.map((r,i)=>{
+    const st=stOf.get(r);
+    const diff=(r.ref!=null&&r.buy!=null)?r.ref-r.buy:null;
+    const reason=statusReason(r);
+    const links=[
+      r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">oferta</a>`:null,
+      r.tcgUrl?`<a href="${esc(r.tcgUrl)}" target="_blank" rel="noopener">TCG</a>`:null
+    ].filter(Boolean).join(" · ")||"—";
+    const badgeCls=st.cls==="ok"?"b-ok":(st.cls==="warn"?"b-warn":"b-bad");
+    return `<tr class="${st.rej?"rej":""}">
+      <td class="num">${i+1}</td>
+      <td class="margin">${r.margin==null?"—":r.margin.toFixed(1)+"%"}</td>
+      <td class="num">${money(r.buy)}</td>
+      <td class="num">${money(r.ref)}</td>
+      <td class="num">${diff==null?"—":money(diff)}</td>
+      <td><span class="cardname">${esc(r.name)}</span> <span class="cardnum">${esc(r.number)}</span></td>
+      <td>${esc(r.set)}</td>
+      <td>${esc(r.rarity)}</td>
+      <td>${esc(cardType(r.name))}</td>
+      <td class="num">${r.qty==null?"—":r.qty}</td>
+      <td><span class="badge b-src ${r.fallback?"fb":""}">${r.fallback?"fallback":(r.source?"real":"—")}</span></td>
+      <td><span class="badge ${badgeCls}" ${reason?`title="${esc(reason)}"`:""}>${st.label}</span></td>
+      <td class="links">${links}</td>
+    </tr>`;
+  }).join("")||`<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:26px">Sem dados — importe um scan ou carregue o exemplo.</td></tr>`;
+  $("table-title").textContent=`Deals (${sorted.length} linha${sorted.length===1?"":"s"} visíveis)`;
+  $("table-note").textContent=state.isDemo?"Dados DEMO — valores fictícios, sem links de oferta (o app nunca inventa URL).":
+    (all.length?`Aprovadas = margem ≥ ${state.fx.margin}% e compra ≥ piso. Linhas “validar” têm alguma flag de honestidade de preço (passe o mouse no selo para ver o motivo).`:"");
+}
+function renderHist(filtered){
+  const host=$("hist"),hx=$("histx");
+  const ms=filtered.map(r=>r.margin).filter(m=>m!=null&&isFinite(m));
+  if(ms.length<2){host.innerHTML=`<span style="color:var(--muted);font-size:12.5px;align-self:center;margin:auto">Sem dados suficientes para o histograma.</span>`;hx.innerHTML="";return;}
+  const min=Math.min(...ms),max=Math.max(...ms);
+  const nb=Math.min(14,Math.max(6,Math.round(Math.sqrt(ms.length)*2)));
+  const w=(max-min)/nb||1;
+  const bins=Array.from({length:nb},()=>0);
+  ms.forEach(m=>{let i=Math.floor((m-min)/w);if(i>=nb)i=nb-1;bins[i]++;});
+  const peak=Math.max(...bins);
+  host.innerHTML=bins.map((n,i)=>{
+    const lo=min+i*w,hi=lo+w;
+    const below=hi<=state.fx.margin;
+    return `<div class="bin ${below?"below":""}" style="height:${Math.max(2,n/peak*100)}%" title="${lo.toFixed(0)}% a ${hi.toFixed(0)}%: ${n} carta${n===1?"":"s"}" aria-label="${lo.toFixed(0)} a ${hi.toFixed(0)} por cento: ${n}"></div>`;
+  }).join("");
+  hx.innerHTML=`<span>${min.toFixed(0)}%</span><span>margem bruta</span><span>${max.toFixed(0)}%</span>`;
+}
+
+/* ================= EXPORT ================= */
+function visibleSortedRows(){
+  const withStatus=state.rows.filter(passesFilters).map(r=>({r,st:rowStatus(r)}));
+  const vis=state.hideRej?withStatus.filter(x=>!x.st.rej):withStatus;
+  const sorted=sortRows(vis.map(x=>x.r));
+  const stOf=new Map(withStatus.map(x=>[x.r,x.st]));
+  return sorted.map(r=>({r,st:stOf.get(r)}));
+}
+function download(name,mime,content){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+}
+function exportCSV(){
+  const rows=visibleSortedRows();
+  const cur=state.dataScanner==="myp"?"R$":"US$";
+  const head=["Margem %","Compra ("+cur+")","Ref TCG ("+cur+")","Dif","Carta","Numero","Set","Raridade","Tipo","Cond","Qtd","Fonte","Status","URL oferta","URL TCG"];
+  const lines=[head.join(";")].concat(rows.map(({r,st})=>{
+    const diff=(r.ref!=null&&r.buy!=null)?(r.ref-r.buy).toFixed(2):"";
+    return [r.margin==null?"":r.margin.toFixed(1),r.buy??"",r.ref??"",diff,
+      r.name,r.number,r.set,r.rarity,cardType(r.name),r.cond,r.qty??"",
+      r.fallback?"fallback":(r.source||""),st.label,r.url,r.tcgUrl]
+      .map(v=>{v=String(v??"");return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(";");
+  }));
+  download(`radar_tcg_${state.dataScanner}_${stamp()}.csv`,"text/csv;charset=utf-8","﻿"+lines.join("\n"));
+}
+function exportJSON(){
+  const rows=visibleSortedRows().map(({r,st})=>({...r,status:st.label,tipo:cardType(r.name)}));
+  download(`radar_tcg_${state.dataScanner}_${stamp()}.json`,"application/json",JSON.stringify(rows,null,2));
+}
+function exportMD(){
+  const rows=visibleSortedRows();
+  const cur=state.dataScanner==="myp"?"R$":"US$";
+  const head=`| # | Margem % | Compra ${cur} | TCG ${cur} | Dif | Carta | Set | Raridade | Cond | Qtd | Flag | Links |`;
+  const sep="|---|---|---|---|---|---|---|---|---|---|---|---|";
+  const body=rows.map(({r,st},i)=>{
+    const diff=(r.ref!=null&&r.buy!=null)?(r.ref-r.buy).toFixed(2):"—";
+    const carta=r.number&&!r.name.includes(r.number)?`${r.name} ${r.number}`:r.name;
+    const links=[r.url?`[oferta](${r.url})`:null,r.tcgUrl?`[TCG](${r.tcgUrl})`:null].filter(Boolean).join(" · ")||"—";
+    const flag=st.label==="ok"?"":st.label;
+    return `| ${i+1} | ${r.margin==null?"—":"**"+r.margin.toFixed(1)+"%**"} | ${r.buy??"—"} | ${r.ref??"—"} | ${diff} | ${carta} | ${r.set} | ${r.rarity} | ${r.cond} | ${r.qty??"—"} | ${flag} | ${links} |`;
+  });
+  const note=state.isDemo?"\n\n> ⚠️ DEMO — valores fictícios, apenas demonstração da interface.":"";
+  const md=`### Radar TCG — ${state.dataScanner==="myp"?"MYP":"CardTrader"} · ${stamp()} · filtro: margem ≥ ${state.fx.margin}%, piso ${money(state.fx.floor)}\n\n${head}\n${sep}\n${body.join("\n")}${note}\n`;
+  copyText(md,$("btn-md"));
+}
+function copyText(text,btn){
+  const done=()=>{if(btn){btn.classList.add("done");const t=btn.textContent;btn.textContent="Copiado ✓";setTimeout(()=>{btn.classList.remove("done");btn.textContent=t;},1600);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));}
+  else fallbackCopy(text,done);
+}
+function fallbackCopy(text,done){
+  const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");done();}catch(e){}ta.remove();
+}
+
+/* ================= WIRING ================= */
+function setScanner(s){
+  state.scanner=s;
+  document.documentElement.dataset.scanner=s==="ct"?"ct":"myp";
+  $("sc-myp").setAttribute("aria-pressed",s==="myp");
+  $("sc-ct").setAttribute("aria-pressed",s==="ct");
+  const p=state.params[s];
+  $("p-margin").value=p.margin;$("p-margin-r").value=Math.min(100,p.margin);
+  $("p-floor").value=p.floor;
+  if(s==="myp")$("p-delay").value=p.delay;else $("p-validate").value=p.validate;
+  $("import-scanner").value=s;
+  renderGroups();renderCmd();
+}
+function setView(v){
+  state.view=v;
+  $("tab-config").setAttribute("aria-pressed",v==="config");
+  $("tab-explore").setAttribute("aria-pressed",v==="explore");
+  $("view-config").classList.toggle("viewhide",v!=="config");
+  $("view-explore").classList.toggle("viewhide",v!=="explore");
+}
+$("sc-myp").addEventListener("click",()=>setScanner("myp"));
+$("sc-ct").addEventListener("click",()=>setScanner("ct"));
+$("tab-config").addEventListener("click",()=>setView("config"));
+$("tab-explore").addEventListener("click",()=>setView("explore"));
+
+$("p-margin").addEventListener("input",()=>{const v=Math.max(0,parseNum($("p-margin").value)??30);state.params[state.scanner].margin=v;$("p-margin-r").value=Math.min(100,v);renderCmd();});
+$("p-margin-r").addEventListener("input",()=>{const v=Number($("p-margin-r").value);state.params[state.scanner].margin=v;$("p-margin").value=v;renderCmd();});
+$("p-floor").addEventListener("input",()=>{state.params[state.scanner].floor=parseNum($("p-floor").value)??0;renderCmd();});
+$("p-delay").addEventListener("input",()=>{state.params.myp.delay=parseNum($("p-delay").value)??1.5;renderCmd();});
+$("p-validate").addEventListener("input",()=>{state.params.ct.validate=parseNum($("p-validate").value)??30;renderCmd();});
+document.querySelectorAll(".copy").forEach(b=>b.addEventListener("click",()=>copyText($(b.dataset.copy).textContent,b)));
+
+$("btn-import").addEventListener("click",importText);
+$("btn-demo").addEventListener("click",loadDemo);
+$("btn-clear").addEventListener("click",()=>{state.rows=[];state.isDemo=false;$("paste").value="";$("demo-banner").classList.add("viewhide");$("import-note").textContent="Nenhum dado carregado ainda.";buildFilterChips();renderExplore();});
+
+$("fx-margin").addEventListener("input",()=>{state.fx.margin=parseNum($("fx-margin").value)??0;$("fx-margin-r").value=Math.min(100,state.fx.margin);renderExplore();});
+$("fx-margin-r").addEventListener("input",()=>{state.fx.margin=Number($("fx-margin-r").value);$("fx-margin").value=state.fx.margin;renderExplore();});
+$("fx-floor").addEventListener("input",()=>{state.fx.floor=parseNum($("fx-floor").value)??0;renderExplore();});
+$("fx-pmin").addEventListener("input",()=>{state.fx.pmin=parseNum($("fx-pmin").value);renderExplore();});
+$("fx-pmax").addEventListener("input",()=>{state.fx.pmax=parseNum($("fx-pmax").value);renderExplore();});
+$("fx-name").addEventListener("input",()=>{state.fx.name=$("fx-name").value.trim();renderExplore();});
+$("rule-add").addEventListener("click",()=>{
+  const t=$("rule-text").value.trim(),f=parseNum($("rule-floor").value);
+  if(!t||f==null)return;
+  state.rules.push({text:t,floor:f});$("rule-text").value="";$("rule-floor").value="";
+  renderRules();renderExplore();
+});
+$("btn-hide-rej").addEventListener("click",()=>{state.hideRej=!state.hideRej;$("btn-hide-rej").setAttribute("aria-pressed",state.hideRej);$("btn-hide-rej").textContent=state.hideRej?"Mostrar reprovadas":"Ocultar reprovadas";renderExplore();});
+$("btn-csv").addEventListener("click",exportCSV);
+$("btn-json").addEventListener("click",exportJSON);
+$("btn-md").addEventListener("click",exportMD);
+
+/* init */
+document.documentElement.dataset.scanner="myp";
+MYP_GROUPS[0].sets.forEach(s=>state.sel.myp.add(s.sub));
+CT_GROUPS[0].sets.forEach(([c])=>state.sel.ct.add(c));
+renderGroups();renderCmd();renderRules();buildFilterChips();renderExplore();
+</script>

@@ -72,6 +72,12 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
   SINAIS. Leitura premium = DOM-scraper JS (`~/doubleholo-scraper/`, PC do
   operador); harvest de token é bloqueado de propósito.
 - **`test_doubleholo_signals.py`** — testes do pipeline.
+- **`radar-tcg/`** — Radar·TCG (PR #7): painel visual interativo (um único
+  `index.html`, sem dependência externa) dos scanners MYP + CardTrader. Monta o
+  comando de scan a partir dos 6 grupos canônicos de cada scanner (verbatim das
+  skills `scan-myp` / `/scan`), convertendo sozinho a convenção de threshold
+  (inteiro no MYP, fração no CardTrader), e importa/filtra o resultado de um scan
+  já rodado. Ver `tooling/radar-tcg/README.md`.
 
 ## Testes
 

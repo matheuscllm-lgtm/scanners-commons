@@ -41,6 +41,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `05-MODELO-ENTREGA.md` | o formato padrão da tabela de entrega (estilo MYP) |
 | `06-AUTO-SKILL.md` | o que é o comando `/auto` e como manter as cópias em sincronia |
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
+| `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (a construir no card-trader-scanner; IDs/schema verificados 2026-07-17) |
 
 ## ⚠️ Armadilha de nomes: pasta local ≠ repo GitHub
 

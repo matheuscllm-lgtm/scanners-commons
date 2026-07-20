@@ -1,5 +1,15 @@
 # HANDOFF — Scanner ONE PIECE (CardTrader → TCGplayer)
 
+**Status:** ✅ **CONCLUÍDO em 2026-07-18** — `op_scanner.py` construído conforme
+este handoff, com a aceitação integral cumprida: chave real `onepiece_language`
+provada com oferta JP ao vivo, filtro de singles por `collector_number` (+ fix
+retroativo v1.1 no `dbs_scanner.py`), 37 testes offline espelhando o dbs, prova
+real `--expansions op01` com validação manual das linhas. Mergeado no
+card-trader-scanner via **#58** (2026-07-20, empilhado no #57). Primeira
+varredura do catálogo completo (93 expansões) entregue em 2026-07-20. Backlog
+registrado lá: extrair o núcleo comum `ct_tcg_core.py` (dbs+op). *(O texto
+abaixo é o handoff original, preservado como registro.)*
+
 > **Para a próxima sessão (local ou nuvem):** construir o `op_scanner.py` — a
 > MESMA coisa que o `dbs_scanner.py` (Dragon Ball, PR #57), porém para o
 > **One Piece Card Game**. Pedido do operador em 2026-07-17.

@@ -28,6 +28,7 @@ Combinada, com separador ` · `, **os dois lados sempre** (o link da loja onde c
 - `[oferta]` = o anúncio na loja (MYP / CardTrader / Liga / COMC / eBay).
 - `[TCG]` / `[referência]` = a página de preço de referência (pokemontcg.io, tcgcsv, PriceCharting…).
 - Lado faltando → renderiza `—`.
+- **URL sempre percent-encodada pela ferramenta** (espaço, aspas e **parênteses** → `%20`/`%27`/`%28`/`%29`, sem re-encodar `%XX` existente — `quote(url, safe="%/?&=:+,*")`). Em `[label](url)` um `)` cru fecha o link no primeiro parêntese, e o wrap `<url>` **não** é respeitado por todo renderizador (oferta da Liga truncada no remote-control, operador 2026-08-04). URLs da Liga carregam `(ING)`/`(Kit Pré-Lançamento)` no `prod=` — sem encode o link abre a página errada.
 
 > Isto **substitui** o formato antigo de colunas de link separadas. Todos os 6 já convergiram pra coluna `Links` combinada (o eBay foi o último, alinhado em 22/06 no PR #2).
 

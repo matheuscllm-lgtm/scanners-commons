@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matheuscllm-lgtm/scanners-commons/integrations/gpt-dashboard/schemas/deal.schema.json",
+  "title": "Um deal unificado (linha do feed)",
+  "description": "Alias do $defs.deal do dashboard-feed.schema.json — fonte unica, sem duplicacao.",
+  "$ref": "dashboard-feed.schema.json#/$defs/deal"
+}

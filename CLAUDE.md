@@ -42,6 +42,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `06-AUTO-SKILL.md` | o que é o comando `/auto` e como manter as cópias em sincronia |
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
 | `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (status: concluído 2026-07-18 — `op_scanner.py` mergeado no card-trader-scanner #58) |
+| `integrations/gpt-dashboard/` | 🔌 canal de integração com o GPT do dashboard integrativo: contrato de dados + schemas + mensagens datadas + validador (`validate_feed.py`, 19 testes) + `PACOTE-CONTEXTO-GPT.md` pra colar no GPT (repo é privado). Regra: mensagem é conversa, contrato é lei — mudança aceita atualiza contrato+schema no MESMO PR do código |
 
 ## ⚠️ Armadilha de nomes: pasta local ≠ repo GitHub
 
@@ -84,6 +85,7 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
 
 ```bash
 cd tooling && python -m pytest test_doubleholo_signals.py -q   # 14 testes, offline
+cd integrations/gpt-dashboard && python -m pytest test_validate_feed.py -q  # 19 testes, offline
 ```
 
 ## Fluxo de desenvolvimento e segurança

@@ -209,10 +209,14 @@ Pontos fixados:
 - **Idempotência:** reenvio do mesmo `stamp` faz upsert do run.
 - **Nunca inventar:** linhas sem `compra_brl > 0` e `ref_brl > 0` não entram;
   URLs copiadas literalmente; `notas[]` preservado sem virar score.
-- **Pendências aceitas pelo GPT (aguardando publicação):** run com `deals: []`
-  deve ser aceito com `imported: 0` (run de 0 deals é informação, não erro) e
-  o descarte de linhas na normalização deve voltar contado no `201`
-  (`skipped`), nunca silencioso.
+- **Fechado (publicado no dashboard v7, 2026-08-20):** run com `deals: []` é
+  aceito (`201`, `imported: 0`, upsert de run/`sources[]`, oportunidades do
+  mesmo `stamp` substituídas — inclusive por conjunto vazio); todo `201` traz
+  `skipped.linha_invalida` + `skipped.sem_preco_positivo` (descarte nunca
+  silencioso); `400 No deals supplied` só para corpo sem a coleção/coleção
+  não-array; o antigo `422` foi removido. Formato do `201`:
+  `{"imported": N, "skipped": {...}, "runId": "<stamp>", "scanner":
+  "integrated-scanner", "schemaVersion": 1}`.
 - **Envio:** hoje é manual (`curl` da spec). Automação = backlog: passo
   opcional pós-run no `integrated-scanner` (decisão do operador).
 

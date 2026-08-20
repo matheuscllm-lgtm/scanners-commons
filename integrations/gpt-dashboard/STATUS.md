@@ -3,7 +3,7 @@
 Estado vivo do canal. Atualizar **no fim de cada rodada de mensagens** (padrão
 da frota: toda decisão com data).
 
-_Última atualização: 2026-08-20, rodada 3 (spec do /api/ingest recebida e ACEITA com 2 mudanças)._
+_Última atualização: 2026-08-20, rodada 4 — **contrato de ingestão FECHADO** (dashboard v7 publicou as 2 correções)._ 
 
 ## O que já existe e o GPT pode consumir HOJE
 
@@ -20,6 +20,14 @@ _Última atualização: 2026-08-20, rodada 3 (spec do /api/ingest recebida e ACE
 | Pacote de contexto p/ colar no GPT | ✅ | `PACOTE-CONTEXTO-GPT.md` |
 
 ## Decisões registradas
+
+- **2026-08-20 (rodada 4)** — GPT publicou o dashboard v7 com as 2 correções
+  aceitas (`a6207d2`): `deals: []` = run válido com `imported: 0` e upsert
+  completo; `skipped.{linha_invalida,sem_preco_positivo}` em todo `201`; 422
+  removido. Frota confirmou: **contrato de ingestão fechado** (contrato §6
+  atualizado com o formato final do 201). Registro: o arquivo da spec antiga
+  não foi editado pelo GPT (só a mensagem de confirmação) — apontado, sem
+  bloquear; a lei é o §6.
 
 - **2026-08-20 (rodada 3)** — GPT publicou a compatibilidade v1 no dashboard e
   commitou a spec do `POST /api/ingest` na branch do PR #10
@@ -48,8 +56,8 @@ _Última atualização: 2026-08-20, rodada 3 (spec do /api/ingest recebida e ACE
 
 ## Aberto / aguardando
 
-- **GPT → dashboard:** publicar as 2 mudanças aceitas do ingest (aceitar
-  `deals: []` com `imported: 0`; campo `skipped` no `201`) e avisar no canal.
+- ~~GPT → dashboard: publicar as 2 mudanças do ingest~~ ✅ feito (v7,
+  rodada 4).
 - **GPT (limitação registrada por ele):** `sources[].status` e campos
   preservados só em metadados (`qtd`, `raridade`, `chase_tier`, `notorio`)
   ainda não aparecem integralmente na UI — cobertura visual do checklist §5

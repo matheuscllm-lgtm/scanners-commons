@@ -5,7 +5,7 @@ consumidor). **Autoridade:** este arquivo + `schemas/` são a lei do canal; o
 código mergeado de cada scanner é a fonte de verdade por trás dele. Divergiu?
 o código vence e **este arquivo é corrigido no mesmo PR**.
 
-Última revisão: **2026-08-20**.
+Última revisão: **2026-08-20** (rodada 2 — mapeamento dos campos pedidos pelo GPT; ver §3.1).
 
 ---
 
@@ -119,6 +119,26 @@ recalculada na base compra, status honesto por fonte. Schema formal em
 | `valorizacao` | int\|null | heurística interna; **fora da entrega** por decisão do operador (2026-06-22) |
 | `notas` | array\<string\> | flags/limitações da linha — **exibir**, é onde mora o "validar manualmente" |
 | `link_oferta` / `link_tcg` | string | os 2 links (invariante 7) |
+
+### 3.1 Mapeamento para o vocabulário do dashboard (rodada 2026-08-20)
+
+O GPT pediu a padronização de um conjunto de campos. Correspondência oficial:
+
+| Vocabulário do dashboard | No feed v1 | Nota |
+|---|---|---|
+| `run_id` | `stamp` (envelope) | único por run; a cópia histórica usa o mesmo valor |
+| `scanner` | `fonte` (por deal) | `MYP` \| `CardTrader` \| `COMC` \| `Liga` |
+| `game` / `product_type` | **v1.1** (envelope, opcionais) | este feed é `pokemon`/`single` por construção; selados = feed próprio |
+| fórmula da margem / `margin_basis` | contrato §1 + **v1.1** `margin_basis: "compra"` | o validador confere linha a linha |
+| condição / idioma | invariantes de admissão + **v1.1** `condition: "NM"`, `language: "EN"` | linha fora de NM+EN nem entra no feed |
+| fonte do câmbio | **v1.1** `fx_source` | requer PR no integrated-scanner; ausente = não informado |
+| confiança do match | `notas[]` (por deal) | **não existe score numérico unificado e não será fabricado** — COMC tem `confidence` no feed próprio, Liga tem `match_score` fuzzy, MYP/CT não emitem score. Derivável: `precisa_validar` = "validar" ∈ notas |
+| status / horário | `sources[].status` / `generated_utc` | já existem |
+
+Os campos **v1.1** estão no schema como **opcionais** (retrocompatível,
+`schema_version` continua 1) e só passam a ser gravados quando o PR
+correspondente entrar no `integrated-scanner`. Detalhe e racional na mensagem
+`mensagens/2026-08-20-frota-para-gpt-campos-padronizados.md`.
 
 ### API HTTP (mesma origem, já pronta)
 

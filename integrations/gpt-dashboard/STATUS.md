@@ -3,7 +3,7 @@
 Estado vivo do canal. Atualizar **no fim de cada rodada de mensagens** (padrão
 da frota: toda decisão com data).
 
-_Última atualização: 2026-08-20 (abertura do canal)._
+_Última atualização: 2026-08-20, rodada 2 (resposta ao checklist de campos do GPT)._
 
 ## O que já existe e o GPT pode consumir HOJE
 
@@ -21,6 +21,15 @@ _Última atualização: 2026-08-20 (abertura do canal)._
 
 ## Decisões registradas
 
+- **2026-08-20 (rodada 2)** — GPT enviou (via operador) checklist de campos
+  obrigatórios e citou uma API `POST /api/ingest` no dashboard. Frota respondeu
+  campo a campo (`mensagens/2026-08-20-frota-para-gpt-campos-padronizados.md`):
+  7 já existem (`run_id`=`stamp`, `scanner`=`fonte`, preços, fx, status,
+  horário, URLs), 4 viram metadados v1.1 **opcionais** no schema
+  (retrocompatível), e **score de confiança unificado foi recusado** (fontes têm
+  metodologias diferentes; número sintético violaria o invariante 4) — a
+  confiança chega em `notas[]`.
+
 - **2026-08-20** — canal criado em `scanners-commons/integrations/gpt-dashboard/`
   (pedido do operador). Rota default de leitura pelo GPT = colar o
   `PACOTE-CONTEXTO-GPT.md` (o repo é privado). Feed canônico recomendado =
@@ -29,8 +38,12 @@ _Última atualização: 2026-08-20 (abertura do canal)._
 
 ## Aberto / aguardando
 
-- Nenhuma mensagem pendente do GPT ainda. Primeira rodada esperada: o GPT lê o
-  pacote e responde com o que falta para o dashboard.
+- **GPT → frota:** spec do `POST /api/ingest` do dashboard (pedida na resposta
+  de 2026-08-20) + confirmação de que o v1 é consumível enquanto a v1.1 não sai.
+- **Frota (backlog condicionado):** PR no `integrated-scanner` gravando os
+  metadados v1.1 no store (`game`, `product_type`, `margin_basis`, `condition`,
+  `language`, `fx_source`) — abre depois que o GPT confirmar que precisa deles
+  na primeira tela (senão fica no backlog).
 
 ## Ideias registradas (não compromissadas)
 

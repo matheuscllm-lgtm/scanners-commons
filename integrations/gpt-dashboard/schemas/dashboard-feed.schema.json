@@ -4,67 +4,263 @@
   "title": "Feed unificado de deals da frota (deals_store.json)",
   "description": "Formato do artefato gravado por integrated-scanner/api_store.py e servido por api.py. Contrato humano em ../CONTRATO-DE-DADOS.md. Valores monetarios sao do run; NUNCA estimados.",
   "type": "object",
-  "required": ["schema_version", "generated_utc", "fx", "min_margin_pct", "deal_count", "sources", "deals"],
+  "required": [
+    "schema_version",
+    "generated_utc",
+    "fx",
+    "min_margin_pct",
+    "deal_count",
+    "sources",
+    "deals"
+  ],
   "additionalProperties": true,
   "properties": {
-    "schema_version": {"type": "integer", "const": 1},
-    "generated_utc": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
-    "stamp": {"type": "string"},
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "generated_utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "stamp": {
+      "type": "string",
+      "description": "Carimbo unico do run (AAAAMMDD_HHMMSS). E o run_id do dashboard; a copia historica deals_store_<stamp>.json usa o mesmo valor."
+    },
     "scope": {
       "description": "Codigos canonicos de set do run, ou o profile usado.",
       "oneOf": [
-        {"type": "array", "items": {"type": "string"}},
-        {"type": "string", "enum": ["quick", "full"]}
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "string",
+          "enum": [
+            "quick",
+            "full"
+          ]
+        }
       ]
     },
-    "fx": {"type": "number", "exclusiveMinimum": 0},
-    "min_margin_pct": {"type": "number", "description": "Corte em PERCENT (30 = 30%), base compra."},
-    "notorious_only": {"type": "boolean"},
-    "deal_count": {"type": "integer", "minimum": 0},
-    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
-    "deals": {"type": "array", "items": {"$ref": "#/$defs/deal"}}
+    "fx": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "min_margin_pct": {
+      "type": "number",
+      "description": "Corte em PERCENT (30 = 30%), base compra."
+    },
+    "notorious_only": {
+      "type": "boolean"
+    },
+    "deal_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "deals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/deal"
+      }
+    },
+    "game": {
+      "type": "string",
+      "enum": [
+        "pokemon"
+      ],
+      "description": "v1.1 (opcional): jogo do feed. O store unificado e Pokemon-only por construcao; outros jogos moram em feeds proprios (sealed run_meta.json, scanners DBZ/OP)."
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "single"
+      ],
+      "description": "v1.1 (opcional): tipo de produto do feed. Cada feed e de UM tipo (singles aqui; selados no feed do sealed-scanner)."
+    },
+    "margin_basis": {
+      "type": "string",
+      "enum": [
+        "compra"
+      ],
+      "description": "v1.1 (opcional, redundante com o contrato): base da margem ja unificada. Sempre 'compra' neste feed."
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "NM"
+      ],
+      "description": "v1.1 (opcional): condicao de admissao do feed. Linha nao-NM nem entra (match exato, nunca substring)."
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "EN"
+      ],
+      "description": "v1.1 (opcional): idioma de admissao do feed (EN estrito)."
+    },
+    "fx_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "inferido-ct",
+        "fallback"
+      ],
+      "description": "v1.1 (opcional): origem do cambio global do run (--fx manual | inferido do output do CardTrader | fallback documentado 5.20). Requer PR no integrated-scanner; ausente = nao informado, NAO deduzir."
+    }
   },
   "$defs": {
     "source": {
       "type": "object",
       "description": "Status honesto de uma fonte no run. Fonte que falhou NUNCA some da tela.",
-      "required": ["source", "status"],
+      "required": [
+        "source",
+        "status"
+      ],
       "additionalProperties": true,
       "properties": {
-        "source": {"type": "string"},
-        "status": {"type": "string", "enum": ["ok", "falhou", "timeout", "pulado", "indisponível"]},
-        "detail": {"type": "string"},
-        "deals_raw": {"type": "integer", "minimum": 0},
-        "deals_kept": {"type": "integer", "minimum": 0},
-        "duration_s": {"type": ["number", "null"], "minimum": 0},
-        "output_path": {"type": "string"}
+        "source": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "falhou",
+            "timeout",
+            "pulado",
+            "indisponível"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "deals_raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deals_kept": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "output_path": {
+          "type": "string"
+        }
       }
     },
     "deal": {
       "type": "object",
       "description": "Uma linha comparada. Margem BRUTA, base COMPRA, sem nenhuma taxa embutida.",
-      "required": ["fonte", "carta", "compra_brl", "ref_brl", "margem_pct"],
+      "required": [
+        "fonte",
+        "carta",
+        "compra_brl",
+        "ref_brl",
+        "margem_pct"
+      ],
       "additionalProperties": true,
       "properties": {
-        "fonte": {"type": "string", "enum": ["MYP", "CardTrader", "COMC", "Liga"]},
-        "carta": {"type": "string", "minLength": 1},
-        "set_name": {"type": "string"},
-        "numero": {"type": "string"},
-        "raridade": {"type": "string", "description": "Pouco confiavel no MYP (SIR ja veio como 'Comum')."},
-        "chase_tier": {"type": "string"},
-        "notorio": {"type": "string", "description": "'⭐ <nome>' ou ''. Informacao, nunca ranking."},
-        "compra_brl": {"type": "number", "minimum": 0},
-        "compra_usd": {"type": "number", "minimum": 0},
-        "fx": {"type": "number", "minimum": 0},
-        "ref_brl": {"type": "number", "minimum": 0},
-        "ref_usd": {"type": "number", "minimum": 0},
-        "margem_pct": {"type": "number", "description": "PERCENT, base compra: (ref_brl - compra_brl)/compra_brl*100."},
-        "lucro_brl": {"type": "number"},
-        "qtd": {"type": ["integer", "null"], "description": "null = a fonte NAO informa estoque (MYP/Liga). Renderizar '—', nunca 0."},
-        "valorizacao": {"type": ["integer", "null"], "description": "Heuristica interna; fora da entrega desde 2026-06-22."},
-        "notas": {"type": "array", "items": {"type": "string"}, "description": "Flags/limitacoes da linha. DEVEM ser exibidas."},
-        "link_oferta": {"type": "string", "description": "URL da oferta. Lida do artefato, NUNCA fabricada."},
-        "link_tcg": {"type": "string", "description": "URL da referencia TCGplayer. Lida do artefato, NUNCA fabricada."}
+        "fonte": {
+          "type": "string",
+          "enum": [
+            "MYP",
+            "CardTrader",
+            "COMC",
+            "Liga"
+          ]
+        },
+        "carta": {
+          "type": "string",
+          "minLength": 1
+        },
+        "set_name": {
+          "type": "string"
+        },
+        "numero": {
+          "type": "string"
+        },
+        "raridade": {
+          "type": "string",
+          "description": "Pouco confiavel no MYP (SIR ja veio como 'Comum')."
+        },
+        "chase_tier": {
+          "type": "string"
+        },
+        "notorio": {
+          "type": "string",
+          "description": "'⭐ <nome>' ou ''. Informacao, nunca ranking."
+        },
+        "compra_brl": {
+          "type": "number",
+          "minimum": 0
+        },
+        "compra_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fx": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ref_brl": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ref_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "margem_pct": {
+          "type": "number",
+          "description": "PERCENT, base compra: (ref_brl - compra_brl)/compra_brl*100."
+        },
+        "lucro_brl": {
+          "type": "number"
+        },
+        "qtd": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "null = a fonte NAO informa estoque (MYP/Liga). Renderizar '—', nunca 0."
+        },
+        "valorizacao": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Heuristica interna; fora da entrega desde 2026-06-22."
+        },
+        "notas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Flags/limitacoes da linha. DEVEM ser exibidas."
+        },
+        "link_oferta": {
+          "type": "string",
+          "description": "URL da oferta. Lida do artefato, NUNCA fabricada."
+        },
+        "link_tcg": {
+          "type": "string",
+          "description": "URL da referencia TCGplayer. Lida do artefato, NUNCA fabricada."
+        }
       }
     }
   }

@@ -23,6 +23,13 @@ Conferir uma chave (PowerShell):
 [System.Environment]::GetEnvironmentVariable('POKEMONTCG_API_KEY','User')
 ```
 
+Nova em 2026-08-20 — integração dashboard (GPT): **`DASHBOARD_SITE_BYPASS_TOKEN`**
+— bearer do `POST /api/ingest` do dashboard integrativo (spec no canal
+`integrations/gpt-dashboard/`). Vive SÓ como secret/env (repo-lar a definir
+junto do passo de push, provável `integrated-scanner`); setar sem BOM
+(`printf '%s' '<token>' | gh secret set DASHBOARD_SITE_BYPASS_TOKEN`) e
+sanitizar ao ler. Nunca em arquivo, log ou exemplo.
+
 O CardTrader também lê **`CT_JWT`** (token da API do CardTrader) — fica no arquivo `.env` do repo do CT, não nas variáveis globais.
 
 ---

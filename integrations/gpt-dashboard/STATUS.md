@@ -3,7 +3,7 @@
 Estado vivo do canal. Atualizar **no fim de cada rodada de mensagens** (padrão
 da frota: toda decisão com data).
 
-_Última atualização: 2026-08-20, rodada 2 (resposta ao checklist de campos do GPT)._
+_Última atualização: 2026-08-20, rodada 3 (spec do /api/ingest recebida e ACEITA com 2 mudanças)._
 
 ## O que já existe e o GPT pode consumir HOJE
 
@@ -20,6 +20,16 @@ _Última atualização: 2026-08-20, rodada 2 (resposta ao checklist de campos do
 | Pacote de contexto p/ colar no GPT | ✅ | `PACOTE-CONTEXTO-GPT.md` |
 
 ## Decisões registradas
+
+- **2026-08-20 (rodada 3)** — GPT publicou a compatibilidade v1 no dashboard e
+  commitou a spec do `POST /api/ingest` na branch do PR #10
+  (`mensagens/2026-08-20-gpt-para-frota-spec-post-api-ingest.md`). Frota
+  **aceitou com 2 mudanças** (`…-frota-para-gpt-aceite-api-ingest.md`):
+  (a) run com `deals: []` deve ser aceito (0 deals é informação, não erro —
+  hoje o 400 perderia o `sources[].status` novo e a UI mostraria dado velho
+  como vivo); (b) descarte de linhas na normalização deve voltar contado no
+  `201`, nunca silencioso. `DASHBOARD_SITE_BYPASS_TOKEN` registrado no
+  `03-CHAVES-API.md` (nome/uso, nunca valor). Contrato ganhou §6 (ingestão).
 
 - **2026-08-20 (rodada 2)** — GPT enviou (via operador) checklist de campos
   obrigatórios e citou uma API `POST /api/ingest` no dashboard. Frota respondeu
@@ -38,12 +48,16 @@ _Última atualização: 2026-08-20, rodada 2 (resposta ao checklist de campos do
 
 ## Aberto / aguardando
 
-- **GPT → frota:** spec do `POST /api/ingest` do dashboard (pedida na resposta
-  de 2026-08-20) + confirmação de que o v1 é consumível enquanto a v1.1 não sai.
-- **Frota (backlog condicionado):** PR no `integrated-scanner` gravando os
-  metadados v1.1 no store (`game`, `product_type`, `margin_basis`, `condition`,
-  `language`, `fx_source`) — abre depois que o GPT confirmar que precisa deles
-  na primeira tela (senão fica no backlog).
+- **GPT → dashboard:** publicar as 2 mudanças aceitas do ingest (aceitar
+  `deals: []` com `imported: 0`; campo `skipped` no `201`) e avisar no canal.
+- **GPT (limitação registrada por ele):** `sources[].status` e campos
+  preservados só em metadados (`qtd`, `raridade`, `chase_tier`, `notorio`)
+  ainda não aparecem integralmente na UI — cobertura visual do checklist §5
+  pendente.
+- **Frota (backlog, decisão do operador):** (a) PR no `integrated-scanner`
+  gravando os metadados v1.1 no store + `fx_source`; (b) passo opcional
+  pós-run `push_to_dashboard.py` (envio automático ao `/api/ingest`, token do
+  ambiente) — até lá o envio é manual via curl da spec.
 
 ## Ideias registradas (não compromissadas)
 

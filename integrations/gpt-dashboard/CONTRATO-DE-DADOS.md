@@ -195,7 +195,28 @@ que são a mesma coisa:
 - [ ] Exibe a **idade** do dado (`generated_utc`) — deal envelhece rápido, cópia barata some?
 - [ ] Não recomenda compra em lugar nenhum?
 
-## 6. Como pedir mudança de contrato
+## 6. Ingestão no dashboard (`POST /api/ingest`)
+
+O dashboard aceita o `deals_store.json` v1 **inteiro, sem wrapper**, via
+`POST /api/ingest` — spec normativa na mensagem
+`mensagens/2026-08-20-gpt-para-frota-spec-post-api-ingest.md`, aceite (com 2
+mudanças pedidas) em `mensagens/2026-08-20-frota-para-gpt-aceite-api-ingest.md`.
+Pontos fixados:
+
+- **Auth:** `Authorization: Bearer <DASHBOARD_SITE_BYPASS_TOKEN>` — o token
+  vive SÓ como secret (GitHub Actions/env), nunca em arquivo; registrado no
+  `03-CHAVES-API.md`. Setar sem BOM e sanitizar ao ler (family-error nº 1).
+- **Idempotência:** reenvio do mesmo `stamp` faz upsert do run.
+- **Nunca inventar:** linhas sem `compra_brl > 0` e `ref_brl > 0` não entram;
+  URLs copiadas literalmente; `notas[]` preservado sem virar score.
+- **Pendências aceitas pelo GPT (aguardando publicação):** run com `deals: []`
+  deve ser aceito com `imported: 0` (run de 0 deals é informação, não erro) e
+  o descarte de linhas na normalização deve voltar contado no `201`
+  (`skipped`), nunca silencioso.
+- **Envio:** hoje é manual (`curl` da spec). Automação = backlog: passo
+  opcional pós-run no `integrated-scanner` (decisão do operador).
+
+## 7. Como pedir mudança de contrato
 
 Abra uma mensagem em `mensagens/` (template em `mensagens/TEMPLATE.md`) dizendo
 **o que falta, para qual tela, e o que o dashboard faria com o campo**. A frota

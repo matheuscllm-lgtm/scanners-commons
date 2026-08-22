@@ -42,6 +42,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `06-AUTO-SKILL.md` | o que é o comando `/auto` e como manter as cópias em sincronia |
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
 | `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (status: concluído 2026-07-18 — `op_scanner.py` mergeado no card-trader-scanner #58) |
+| `HANDOFF-CARDTRADER-FONTE-PRECO.md` | handoff da instabilidade da pokemontcg.io no CardTrader scanner + proposta `--provider tcgcsv` (status: ABERTO 2026-08-22 — decisão de caminho com o operador) |
 
 ## ⚠️ Armadilha de nomes: pasta local ≠ repo GitHub
 

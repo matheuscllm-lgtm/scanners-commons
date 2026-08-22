@@ -1,7 +1,24 @@
 # HANDOFF — CardTrader: instabilidade da fonte de preço (pokemontcg.io) e proposta de fonte alternativa
 
-**Status: ABERTO** · Criado em 2026-08-22 (sessão Claude Code na nuvem) ·
+**Status: RESOLVIDO em 2026-08-22** (sessão local no PC do operador) ·
+Criado em 2026-08-22 (sessão Claude Code na nuvem) ·
 Repo-alvo: `matheuscllm-lgtm/card-trader-scanner`
+
+> **Desfecho:** caminho (c) executado. (1) Re-run canônico do G6 falhou de novo
+> (pokemontcg.io voltou a 500/502 em ~1 min de scan — a "recuperação" das
+> 21:10 UTC não se sustentou); (2) `--provider tcgcsv` implementado como
+> v2.26 via **PR #62** (default pokemontcg intacto), incluindo mapa de abbr
+> vintage (cobertura G6 20/22; `wiz`/`bog` fora — abbr "PR" ambígua) e um
+> **fix crítico descoberto no primeiro scan real**: o join digits-only
+> colidia a série H dos sets e-Card ("H12"="12") e precificava carta errada
+> — corrigido com `tcgcsv_collector_key` variant-aware (latente desde v2.23).
+> (3) G6 escaneado via tcgcsv em **31s** (vs. timeout de 8 min por set) e
+> entregue pelo postprocess. Detalhe narrativo: `CHANGELOG.md` do repo-alvo,
+> entrada v2.26. A pendência da `POKEMONTCG_API_KEY` na nuvem perdeu
+> urgência (tcgcsv não usa key); se quiser mesmo assim: claude.ai/code →
+> ícone de nuvem → engrenagem do environment → Environment variables
+> (web-UI only; sem secrets store dedicado — a chave fica legível pra quem
+> usa o environment).
 
 > **Para a próxima sessão, em uma frase:** um scan `/scan` do grupo G6 foi
 > pausado no meio porque a **pokemontcg.io** (fonte primária de preço de

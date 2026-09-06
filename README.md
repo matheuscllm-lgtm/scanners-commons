@@ -1,3 +1,5 @@
+> **Regra vigente de entrega:** [DELIVERY_CHAT.md](DELIVERY_CHAT.md). Resultados somente no chat, referência clicável e coleta nova por solicitação; substitui orientações antigas de entrega via GitHub ou preços reutilizados.
+
 # 📚 Manual da Frota de Scanners (pasta comum)
 
 > **O que é isto:** o ponto único de consulta para os **6 scanners de arbitragem** (5 de singles + selados). Reúne, num lugar só, o que se repete entre eles: os **erros mais comuns**, qual **fonte de preço** cada um usa, quais **chaves de API** são necessárias, quais **fallbacks** (planos B) entram em ação, o **estado dos GitHub Actions** e o **modelo padrão de entrega** (tabela estilo MYP).

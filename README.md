@@ -53,6 +53,7 @@ Termos rápidos (o operador é médico, não programador):
 4. **Entrega = tabela markdown no chat.** Nunca arquivo XLSX por padrão (só se você pedir). Gerada pela ferramenta do repo, nunca montada à mão. Ver [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md).
 5. **Claude é o técnico, você decide o capital.** O scanner reporta margem, flags e fontes; não rankeia "compre isto".
 6. **Mostrar TODOS os deals** (aprovados + rejeitados/near-miss), não uma amostra curada.
+7. **Sem check-ins automáticos** (decisão do operador, 2026-09-12): nenhuma sessão Claude agenda `send_later`/Routine/cron para "re-checar" PR, CI ou tarefa, nem mantém acompanhamento automático de PR (subscribe + re-agendamento) por conta própria — **só quando o operador solicitar explicitamente**. A sessão termina quando o trabalho termina; se o harness assinou o PR sozinho ao criá-lo, cancele a assinatura. Acompanhamento é pedido, não default.
 
 ⚠️ **Cuidado com a convenção de threshold (pega muita gente):**
 - **Percentual INTEIRO** (`30` = 30%): **MYP** (`--threshold 30`), **Liga** (`MIN_MARGIN_PERCENT 30`), **eBay** (`min_gross_margin_percent: 30` no `config.yaml`).

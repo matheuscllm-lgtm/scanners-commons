@@ -30,6 +30,9 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
   **nunca recomendar compra** · **entrega = tabela markdown no chat**, gerada pela
   ferramenta do repo, todas as linhas.
 - ⚠️ **Threshold:** inteiro (`30`) = MYP/Liga/eBay; fração (`0.30`) = CT/COMC/Selados.
+- **Sem check-ins automáticos** (operador, 2026-09-12): nenhuma sessão agenda `send_later`/Routine/cron
+  nem mantém acompanhamento automático de PR por conta própria — só sob pedido explícito do operador
+  (regra 7 do `README.md`).
 
 ## Índice dos documentos
 

@@ -68,14 +68,16 @@ lf() { tr -d '\r' < "$1"; }
 # Master + cabeçalho de precedência inserido logo após o fechamento do frontmatter
 # (2º `---`), qualquer que seja o número de chaves. Falha alto se não houver frontmatter.
 build_user_cmd() {
-  if [ "$(lf "$MASTER" | head -n 1)" != "---" ] || [ "$(lf "$MASTER" | awk 'NR>1 && $0=="---"{c++} END{print c+0}')" -lt 1 ]; then
-    echo "ERRO: $MASTER sem frontmatter (--- ... ---); não dá pra montar a cópia de usuário" >&2
-    return 1
-  fi
+  # Um só awk valida e monta: linha 1 tem de ser `---`; até o `---` de fechamento
+  # só podem existir linhas YAML (`chave:`, continuação indentada ou vazia) — um
+  # `---` de corpo (régua markdown) nunca é confundido com o fechamento. Qualquer
+  # violação → exit 1 (com pipefail, a função falha) e nada é escrito.
   lf "$MASTER" | awk -v hdr="$HEADER" '
-    NR==1 { print; next }
+    NR==1 { if ($0 != "---") { print "ERRO: master sem frontmatter na linha 1" > "/dev/stderr"; exit 1 } print; next }
     !done && $0=="---" { print; while ((getline l < hdr) > 0) { sub(/\r$/, "", l); print l }; close(hdr); done=1; next }
-    { print }'
+    !done && $0 !~ /^([A-Za-z0-9_-]+:|[ \t]|$)/ { print "ERRO: frontmatter do master nao fecha antes da linha " NR ": " $0 > "/dev/stderr"; exit 1 }
+    { print }
+    END { if (!done) { print "ERRO: frontmatter do master sem fechamento ---" > "/dev/stderr"; exit 1 } }'
 }
 
 # sync_one <rótulo> <destino> <comando que imprime o conteúdo desejado>
@@ -85,7 +87,13 @@ repo_changed=0; user_changed=0
 sync_one() {
   local label="$1" dest="$2"; shift 2
   local tmp; tmp="$(mktemp "${TMPDIR:-/tmp}/sync-auto.XXXXXX")"; TMPFILES+=("$tmp")
-  "$@" > "$tmp"
+  # A chamada abaixo roda em contexto "testado por ||" (o chamador faz
+  # `sync_one ... || contador++`), onde `set -e` NÃO aborta: por isso o status é
+  # checado à mão e o script sai — nunca escrever conteúdo vazio/parcial no destino.
+  if ! "$@" > "$tmp" || [ ! -s "$tmp" ]; then
+    echo "ERRO: falha ao gerar conteúdo para $label ($dest); nada foi escrito." >&2
+    exit 1
+  fi
   if [ -f "$dest" ] && cmp -s "$tmp" <(lf "$dest"); then
     printf "%-32s ok (já igual)\n" "$label"; return 0
   fi

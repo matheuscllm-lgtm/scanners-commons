@@ -74,4 +74,14 @@ out="$(run --user --check 2>&1)"
 check "nenhum DIFERENTE" '! grep -q DIFERENTE <<<"$out"'
 check "resumo diz 0" 'grep -q "0 destino" <<<"$out"'
 
+echo "T9 gerador falha (master sem fechamento do frontmatter): nao sobrescreve, rc!=0"
+cp "$SB/tooling/auto.md" "$SB/tooling/auto.md.bak"
+awk 'NR>1 && $0=="---" && !done {done=1; next} {print}' "$SB/tooling/auto.md.bak" > "$SB/tooling/auto.md"
+before="$(md5sum "$U" | cut -d" " -f1)"
+run --user >/dev/null 2>&1; rc=$?
+check "rc!=0 com master malformado" '[ "$rc" != 0 ]'
+check "copia de usuario intacta" '[ "$(md5sum "$U" | cut -d" " -f1)" = "$before" ]'
+check "copia de usuario nao vazia" '[ -s "$U" ]'
+mv "$SB/tooling/auto.md.bak" "$SB/tooling/auto.md"
+
 echo; echo "passou=$pass falhou=$fail"; [ "$fail" = 0 ]

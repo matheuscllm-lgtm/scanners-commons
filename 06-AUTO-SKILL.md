@@ -27,6 +27,36 @@ chega na nuvem). São **8 scanners** com `/auto`: CardTrader, eBay, integrado,
 Liga, MYP, longterm-outlook, COMC e Selados. (Oncology não usa — é outro
 domínio.)
 
+### Mais dois destinos, fora dos repos (desde 2026-09-12)
+
+As 8 cópias resolvem a nuvem, mas deixam dois buracos: o `/auto` não existe
+quando você abre o terminal **fora** de um repo da frota, e não existe no
+**Cowork**, que não tem comando de barra. O mesmo script instala os dois:
+
+| Destino | Para quê | Forma |
+|---|---|---|
+| `~/.claude/commands/auto.md` | `/auto` em qualquer pasta do seu PC | comando, montado do master + `tooling/auto-user-header.md` |
+| `~/.claude/skills/auto/SKILL.md` | `/auto` no Cowork | skill, de `tooling/auto-cowork/SKILL.md` |
+
+Repare que isto **não substitui** as 8 cópias: pelo motivo do parágrafo acima,
+uma cópia em `~/.claude/` continua não chegando na nuvem. Ela cobre um caso
+diferente — a sessão que roda fora dos repos.
+
+Duas cautelas que vêm embutidas nos arquivos, porque `/auto` é modo autônomo:
+
+- **O `auto.md` do repo vence** quando existe. O `ebay-arbitrage-scanner`
+  diverge de propósito, e o `CLAUDE.md` dele diz que comando histórico não
+  substitui as regras econômicas novas.
+- **Fora de um repo da frota o pré-voo não lê `CLAUDE.md` nenhum**, ou seja, o
+  modo autônomo rodaria sem invariantes carregados. Nesse caso o contrato manda
+  perguntar em qual repo é a tarefa antes de agir. No Cowork a skill ainda é
+  travada pra **não auto-acionar**: só entra se você escrever `/auto` ou pedir
+  modo autônomo com todas as letras.
+
+⚠️ A cópia do Cowork em `~/.claude/skills/` **não** instala no perfil da conta.
+Pra isso, empacote com o `skill-creator` (`package_skill`) e clique
+**"Save skill"** no card do arquivo.
+
 ## A fonte-mestra (pra não derivarem)
 
 Como são 8 cópias, elas **derivam** com o tempo se a gente edita uma a uma (já
@@ -34,7 +64,10 @@ aconteceu: o Selados ficou pra trás, sem metade do contrato). Pra resolver:
 
 - A **versão oficial** fica aqui, em `tooling/auto.md`.
 - O script `tooling/sync-auto-skill.sh` **copia a oficial pros 8 repos** de uma
-  vez. Depois é só commitar/pushar em cada um.
+  vez, e instala os **2 destinos de usuário** da seção anterior. Depois é só
+  commitar/pushar em cada repo (os destinos de usuário não são versionados —
+  são montados do master a cada sync, que é justamente o que impede de
+  derivarem).
 
 ```bash
 # ver quais repos estão diferentes (não escreve nada):

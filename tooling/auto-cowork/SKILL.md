@@ -1,5 +1,5 @@
 ---
-name: auto
+name: auto-cowork
 description: >-
   Modo AUTÔNOMO da frota de scanners de arbitragem (o `/auto` do terminal):
   resolve a tarefa ponta a ponta — corrige, aprimora, testa, commita, abre PR —
@@ -25,6 +25,13 @@ Leia `tooling/auto.md` do `scanners-commons` e **siga-o como contrato**. Ele tra
 o pré-voo obrigatório, o mandato de corrigir + aprimorar, a orquestração
 paralela, a verificação multi-camada e o encerramento.
 
+**Precedência:** onde esta página e o contrato completo divergirem, **esta página
+vence** — em especial a seção "O que muda no Cowork" (sem alvo: perguntar, nunca
+puxar backlog; sem `$ARGUMENTS`; GitHub via `mcp__github__*`). Instruções do
+contrato que pressupõem terminal (`AskUserQuestion`, `Start-Process`, `gh run
+watch`, `/compact`) não existem aqui: pergunte em texto, rode processos longos
+em primeiro plano com timeout, acompanhe CI pelas ferramentas `mcp__github__*`.
+
 Se o repo não estiver acessível nesta sessão, **você ainda pode operar** — mas só
 dentro dos limites desta página, e diga ao operador que está rodando com o
 contrato reduzido. O que não depende de buscar nada está logo abaixo, de
@@ -38,27 +45,37 @@ negocia, porque cada um é irreversível:
 - **Perda de dados** — apagar ou sobrescrever arquivo que você não criou,
   `git reset --hard`, `push --force`, deletar branch ou repo, `rm` largo.
 - **Segredo/credencial** — expor, commitar, logar ou rotacionar uma chave.
-- **Custo relevante** — recurso pago em volume (créditos Firecrawl, quota de
-  Actions, dezenas de agentes). Suba a escada antes: cache → rota grátis →
-  amostra pequena → só então o freio. Entregue o que a amostra cobre, rotule o
-  resto como não-validado e registre a pergunta de autorização no resumo.
+- **Custo relevante** — recurso pago em volume (créditos Firecrawl, Amazon
+  PA-API, quota de Actions, dezenas de agentes). Suba a escada antes: (1) cache
+  só da coleta em andamento e metadados estáveis, nunca preço de outro scan →
+  (2) rotas grátis (pokemontcg.io, tcgcsv, API MYP, PriceCharting público,
+  curl_cffi) → (3) pago em amostra pequena e proporcional ao valor → (4) volume
+  pago = este freio. Entregue o que a amostra cobre, rotule o resto como
+  não-validado e registre a pergunta de autorização no resumo.
 - **Irreversível de produção** — release público, merge que apaga trabalho,
   mudança difícil de desfazer no comportamento de produção.
 
 ## Invariantes que o modo autônomo nunca quebra
 
-Valem mesmo com o contrato completo em mãos, e valem mais ainda sem ele:
+Valem mesmo com o contrato completo em mãos, e valem mais ainda sem ele. Esta
+lista é uma cópia manual do §9 do contrato: ao editar o §9, edite aqui também.
 
-- **O `CLAUDE.md` do repo manda.** Margem bruta, threshold (a direção muda por
-  repo: fração em CardTrader/COMC/Selados, inteiro em MYP/Liga/eBay), NM-only
-  por match exato, nunca inventar preço — fonte que falhou vira fallback
-  rotulado, jamais número fabricado.
+- **O `CLAUDE.md` do repo manda.** Margem **bruta**, mínimo **30%**, sem taxa
+  embutida (`(revenda − compra)/compra`; o eBay tem regra própria no `CLAUDE.md`
+  dele); threshold (a direção muda por repo: fração em CardTrader/COMC/Selados,
+  inteiro em MYP/Liga/eBay); NM-only por match exato; nunca inventar preço —
+  fonte que falhou vira fallback rotulado, jamais número fabricado.
 - **Entrega = tabela markdown no chat**, gerada pela ferramenta do repo e colada
   verbatim. Nunca remontada à mão, nunca arquivo por padrão, todas as linhas,
-  os dois links em toda linha de todo bucket.
+  os dois links em toda linha de todo bucket — e as **URLs sempre das colunas
+  da fonte, jamais inventadas**.
+- **Preço é sempre desta coleta**: cada pedido renova ofertas, referências e
+  câmbio; resultado antigo nunca é apresentado como atual.
 - **Dados de scan não entram no repo** (`results/`, `outputs/`, planilhas são
   gitignored de propósito). Só código e documentação.
 - **Branch designada, nunca push direto na `main`.**
+- **Nunca commitar segredo/chave.** Segredo com BOM ou zero-width crasha o
+  header (latin-1) e o scan vem "verde mas vazio"; `.strip()` não tira BOM.
 - **Capital é do operador.** Você é técnico: código, dados, auditoria. Nunca
   recomenda comprar ou não comprar.
 

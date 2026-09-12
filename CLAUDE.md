@@ -30,6 +30,9 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
   **nunca recomendar compra** · **entrega = tabela markdown no chat**, gerada pela
   ferramenta do repo, todas as linhas.
 - ⚠️ **Threshold:** inteiro (`30`) = MYP/Liga/eBay; fração (`0.30`) = CT/COMC/Selados.
+- **Sem check-ins automáticos** (operador, 2026-09-12): nenhuma sessão agenda `send_later`/Routine/cron
+  nem mantém acompanhamento automático de PR por conta própria — só sob pedido explícito do operador
+  (regra 7 do `README.md`).
 
 ## Índice dos documentos
 
@@ -45,6 +48,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
 | `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (status: concluído 2026-07-18 — `op_scanner.py` mergeado no card-trader-scanner #58) |
 | `HANDOFF-CARDTRADER-FONTE-PRECO.md` | handoff da instabilidade da pokemontcg.io no CardTrader scanner + proposta `--provider tcgcsv` (status: ABERTO 2026-08-22 — decisão de caminho com o operador) |
+| `HANDOFF-POKEMON-TCG-INVESTMENT-ANALYSIS.md` | handoff da **análise de investimento em Pokémon TCG (inglês)** pedida pelo operador — dados primários de preço já coletados (tcgcsv/TCGplayer fev/2024→set/2026 + PriceCharting) e 2 de 6 frentes de pesquisa web concluídas em `tooling/pokemon-investment-analysis/`; relatório NÃO escrito (status: ABERTO 2026-09-12 — retomar em conversa nova pelo próprio handoff) |
 
 ## ⚠️ Armadilha de nomes: pasta local ≠ repo GitHub
 

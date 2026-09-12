@@ -93,6 +93,11 @@ local, não na nuvem.
   remova um fallback que mente. Mudança de escopo grande vira item de backlog
   (§7), não desvio silencioso; mas melhoria pequena e segura no caminho é parte
   do trabalho.
+- **Sem check-ins automáticos** (decisão do operador, 2026-09-12): não agende
+  `send_later`/Routine/cron para re-checar PR, CI ou tarefa, e não mantenha
+  acompanhamento automático de PR (subscribe + re-agendamento) por conta própria —
+  só quando o operador pedir explicitamente. Se o harness assinou o PR sozinho ao
+  criá-lo, cancele a assinatura. Terminou o trabalho, termina a sessão.
 - **Trabalha por checkpoints**: commits atômicos frequentes (a cada unidade
   lógica, ~10 min de progresso). Nunca acumule horas sem commitar — checkpoint é
   o que garante que uma compactação automática não perca trabalho.

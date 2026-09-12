@@ -15,6 +15,7 @@ Ordenados pelos que mais aparecem / mais doem. Cada um tem: **o que é**, **como
 - **O que é:** os repos usam "squash-merge" (junta vários commits num só ao fechar um PR). Isso deixa o galho local parecendo "à frente" do main, e o `main` local "atrasado" — mesmo o conteúdo já estando todo no main.
 - **Como percebe:** você abre o repo e ele está num galho estranho (`feat/...`, `chore/...`), não no `main`. Bateu em **Liga, COMC e eBay** ao mesmo tempo na auditoria — parecia haver 3 pendências, não havia nenhuma.
 - **Como evita:** o teste de verdade pra saber se um galho já foi mergeado é `git diff --stat origin/main <galho>` estar **vazio** (NÃO `git merge-base`, que sempre falha em squash). Depois de cada PR: `git checkout main && git pull --ff-only` e apague o galho mergeado.
+- **Corolário (2026-09-12, eBay PSA):** depois que o PR da branch designada é mergeado (squash), **recomece a branch a partir do `main`** (`git fetch origin main && git checkout -B <branch> origin/main`) e faça o trabalho novo por cima. **Nunca** "re-parente" o commit antigo por cima do `main` com `git commit-tree`/`update-ref`: o commit carrega a árvore inteira da base velha, e qualquer arquivo que entrou no `main` depois da base do PR **some** (quase apagou `.github/workflows/scan.yml`). Detecção: o mesmo `git diff --stat origin/main <branch>` acusa a deleção **antes** do push — rode-o sempre antes de `--force-with-lease`.
 
 ## 🟠 3. Cobrança do GitHub bloqueando os Actions ("falha" fantasma)
 - **O que é:** quando a conta tem pendência de pagamento/limite, os Actions nem iniciam e aparecem como "failure" — mas **não é erro de código**. Mensagem: *"The job was not started because recent account payments have failed…"*.
@@ -59,11 +60,16 @@ Aparece de jeitos diferentes em cada scanner; é a causa nº1 de "oportunidade" 
 - **Como percebe:** a tabela tem uma coluna `Link`/`Oferta` com um link só, ou duas colunas de link separadas. O modelo correto tem **uma** coluna `Links` com os **dois** hyperlinks juntos.
 - **Como evita:** seguir o [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md) à risca em **toda** entrega de scanner (MYP, CT, Liga, COMC, eBay, Selados, PSA, Integrado): colunas no estilo `# | Margem % | <preço fonte> | TCG | Dif | Carta | Set | Raridade | Cond | Qtd | Links`, onde `Carta` = nome+número e `Links` SEMPRE combina oferta+TCG. Links **lidos do XLSX** (colunas `Link CardTrader` + `Link TCG`), nunca inventados. Entrega = tabela no chat (não arquivo), com **todos** os deals.
 
+## 🟡 13. Sessão de nuvem: `pkill -f` mata o próprio shell; agentes paralelos grandes morrem por 429 sem gravar nada
+- **O que é:** duas armadilhas do ambiente Claude Code na nuvem (2026-09-12, sessão da análise de investimento Pokémon TCG). (a) `pkill -f <padrão>` casa com a linha de comando do **próprio** Bash que o invocou quando o padrão aparece nela (ex.: `pkill -f pull_vol` num comando que também cita `pull_vol2.py`) → o shell morre com exit 144. (b) 6 subagentes de pesquisa em paralelo, cada um com ~300k tokens de orçamento, derrubaram 4 por `rate_limit` (HTTP 429, "session limit") **antes de gravar qualquer resultado** — só 2 de 6 frentes sobreviveram.
+- **Como percebe:** (a) o comando "some" (exit 144) em vez de matar o processo-alvo; (b) a notificação do agente chega com 429 e o arquivo de resultado não existe — o `output_file` do agente é o transcript JSONL, não o resultado.
+- **Como evita:** (a) `pgrep -f "nome[_]x"` (truque do colchete: o padrão não casa consigo mesmo) num comando isolado, ou PID gravado em arquivo pelo próprio processo. (b) Orçamento menor por agente (≈12 buscas + 8 fetches), no máximo 2–3 em paralelo, e instrução explícita de **gravar achados parciais em arquivo a cada lote** — um 429 então perde um lote, não a frente inteira.
+
 ---
 
 ### Padrão por trás de quase tudo acima
 Quatro famílias de erro respondem pela maioria:
-1. **Higiene de segredo/ambiente** (BOM, billing, key não usada) → "verde mas vazio".
+1. **Higiene de segredo/ambiente** (BOM, billing, key não usada, pkill/429 na nuvem) → "verde mas vazio".
 2. **Higiene de git** (galho/main defasado) → falsa sensação de pendência.
 3. **Honestidade de preço** (inflação, fallback-como-real, NM frouxo) → deal falso.
 4. **Padronização de entrega** (coluna `Links` incompleta, fora do modelo MYP) → triagem mais lenta pro operador.

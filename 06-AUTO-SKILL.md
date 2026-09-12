@@ -35,6 +35,19 @@ aconteceu: o Selados ficou pra trás, sem metade do contrato). Pra resolver:
 - A **versão oficial** fica aqui, em `tooling/auto.md`.
 - O script `tooling/sync-auto-skill.sh` **copia a oficial pros 8 repos** de uma
   vez. Depois é só commitar/pushar em cada um.
+- Com `--user`, ele também monta as **cópias de usuário** fora dos repos, no seu
+  PC: `~/.claude/commands/auto.md` (a oficial + um cabeçalho dizendo "o `auto.md`
+  do repo vence; fora de repo, pergunte em qual repo é a tarefa") e
+  `~/.claude/skills/auto-cowork/SKILL.md` (a versão reduzida para o Cowork). Essas
+  cópias **não** chegam na nuvem nem no perfil da conta Cowork — para o Cowork de
+  verdade, empacote a skill e clique "Save skill". Sem `--user` o script não toca
+  em nada fora dos repos.
+- A skill do Cowork chama-se **`auto-cowork`**, não `auto`: no Claude Code, uma
+  skill pessoal chamada `auto` passaria na frente do comando `/auto` (e do de cada
+  repo), e o terminal rodaria a versão reduzida sem perceber. O script remove uma
+  instalação antiga em `~/.claude/skills/auto/` se ela for a nossa.
+- A comparação ignora fim de linha (CRLF do Windows × LF do git), então
+  `--check` só acusa diferença quando o texto muda de verdade.
 
 ```bash
 # ver quais repos estão diferentes (não escreve nada):
@@ -42,6 +55,12 @@ bash tooling/sync-auto-skill.sh --check
 
 # aplicar a versão oficial em todos:
 bash tooling/sync-auto-skill.sh
+
+# aplicar também nas cópias de usuário (~/.claude):
+bash tooling/sync-auto-skill.sh --user
+
+# testes do script (roda contra um HOME falso; não toca nos seus arquivos):
+bash tooling/tests/test_sync_auto_skill.sh
 ```
 
 ## O que o `/auto` garante de bom (resumo do contrato)

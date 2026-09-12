@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
 # Sincroniza a versão canônica do skill /auto (tooling/auto.md) para os 8 repos
-# da frota. Roda do diretório scanners-commons. Idempotente: só copia se mudou.
+# da frota e, sob --user, para as cópias de usuário fora dos repos.
+# Roda do diretório scanners-commons. Idempotente: compara com CR normalizado
+# (core.autocrlf não gera drift falso) e só escreve se o texto mudou.
 #
 # Uso:
-#   bash tooling/sync-auto-skill.sh           # aplica e mostra o que mudou
-#   bash tooling/sync-auto-skill.sh --check    # só compara, não escreve (dry-run)
+#   bash tooling/sync-auto-skill.sh                 # aplica nos 8 repos
+#   bash tooling/sync-auto-skill.sh --check         # dry-run: só compara
+#   bash tooling/sync-auto-skill.sh --user          # repos + cópias de usuário (~/.claude)
+#   bash tooling/sync-auto-skill.sh --user --check  # dry-run incluindo usuário
+#
+# Cópias de USUÁRIO (só com --user; escrevem fora do repo, por isso opt-in):
+# - Claude Code terminal: ~/.claude/commands/auto.md = master + cabeçalho de
+#   precedência (o auto.md do repo vence; sem repo, perguntar antes de agir).
+#   Montado aqui, em vez de virar um 2º arquivo versionado, pra não existir
+#   cópia pra divergir. O cabeçalho entra DEPOIS do frontmatter, seja qual for
+#   o tamanho dele.
+# - Cowork: ~/.claude/skills/auto-cowork/SKILL.md = tooling/auto-cowork/SKILL.md.
+#   O nome é `auto-cowork` de propósito: uma skill pessoal chamada `auto`
+#   sombreia o comando /auto do terminal (e o de cada repo). Uma instalação
+#   legada em ~/.claude/skills/auto/ é removida SE for a nossa (marcador).
+#   Esta cópia local NÃO instala no perfil da conta Cowork — para isso,
+#   empacote com skill-creator e clique 'Save skill' no card.
 set -euo pipefail
 
-MASTER="$(cd "$(dirname "$0")" && pwd)/auto.md"
+TOOLING_DIR="$(cd "$(dirname "$0")" && pwd)"
+MASTER="$TOOLING_DIR/auto.md"
+HEADER="$TOOLING_DIR/auto-user-header.md"
+COWORK="$TOOLING_DIR/auto-cowork/SKILL.md"
 HOME_DIR="${HOME:-/c/Users/mathe}"
+USER_CMD="$HOME_DIR/.claude/commands/auto.md"
+USER_SKILL="$HOME_DIR/.claude/skills/auto-cowork/SKILL.md"
+LEGACY_SKILL="$HOME_DIR/.claude/skills/auto/SKILL.md"
+COWORK_MARKER="Modo AUTÔNOMO da frota de scanners de arbitragem"
 
 REPOS=(
   card-trader-scanner
@@ -21,76 +45,98 @@ REPOS=(
   sealed-arbitrage-scanner
 )
 
-CHECK_ONLY=0
-[ "${1:-}" = "--check" ] && CHECK_ONLY=1
-
-[ -f "$MASTER" ] || { echo "ERRO: master não encontrado: $MASTER" >&2; exit 1; }
-master_hash="$(md5sum "$MASTER" | cut -d' ' -f1)"
-echo "master tooling/auto.md  md5=$master_hash"
-echo
-
-changed=0
-for r in "${REPOS[@]}"; do
-  dest="$HOME_DIR/$r/.claude/commands/auto.md"
-  if [ ! -d "$HOME_DIR/$r/.claude/commands" ]; then
-    printf "%-30s SKIP (sem .claude/commands)\n" "$r"; continue
-  fi
-  if [ -f "$dest" ] && [ "$(md5sum "$dest" | cut -d' ' -f1)" = "$master_hash" ]; then
-    printf "%-30s ok (já igual)\n" "$r"; continue
-  fi
-  if [ "$CHECK_ONLY" = 1 ]; then
-    printf "%-30s DIFERENTE (precisa sync)\n" "$r"; changed=$((changed+1)); continue
-  fi
-  cp "$MASTER" "$dest"
-  printf "%-30s ATUALIZADO\n" "$r"; changed=$((changed+1))
+CHECK_ONLY=0; WITH_USER=0
+for arg in "$@"; do
+  case "$arg" in
+    --check) CHECK_ONLY=1 ;;
+    --user)  WITH_USER=1 ;;
+    *) echo "ERRO: argumento desconhecido: $arg (use --check e/ou --user)" >&2; exit 2 ;;
+  esac
 done
 
-# Cópias de USUÁRIO: fazem o /auto existir FORA dos repos da frota.
-# - Claude Code: ~/.claude/commands/auto.md  = master + cabecalho de precedencia
-#   (o auto.md do repo vence; sem repo, perguntar antes de agir). Montado aqui
-#   em vez de virar um 2o arquivo versionado, pra nao existir copia pra divergir.
-# - Cowork: ~/.claude/skills/auto/SKILL.md   = tooling/auto-cowork/SKILL.md
-#   (skill, nao comando: o Cowork nao tem barra; e a descricao e travada pra so
-#   acionar quando o operador pedir modo autonomo explicitamente).
-HEADER="$(cd "$(dirname "$0")" && pwd)/auto-user-header.md"
-COWORK="$(cd "$(dirname "$0")" && pwd)/auto-cowork/SKILL.md"
-USER_CMD="$HOME/.claude/commands/auto.md"
-USER_SKILL="$HOME/.claude/skills/auto/SKILL.md"
+TMPFILES=()
+cleanup() { [ "${#TMPFILES[@]}" -gt 0 ] && rm -f "${TMPFILES[@]}"; return 0; }
+trap cleanup EXIT
 
-sync_user() {
+need() { [ -f "$1" ] || { echo "ERRO: insumo não encontrado: $1" >&2; exit 1; }; }
+need "$MASTER"
+if [ "$WITH_USER" = 1 ]; then need "$HEADER"; need "$COWORK"; fi
+
+# Conteúdo sem CR: é o que se compara e o que se escreve (LF, como no índice do git).
+lf() { tr -d '\r' < "$1"; }
+
+# Master + cabeçalho de precedência inserido logo após o fechamento do frontmatter
+# (2º `---`), qualquer que seja o número de chaves. Falha alto se não houver frontmatter.
+build_user_cmd() {
+  # Um só awk valida e monta: linha 1 tem de ser `---`; até o `---` de fechamento
+  # só podem existir linhas YAML (`chave:`, continuação indentada ou vazia) — um
+  # `---` de corpo (régua markdown) nunca é confundido com o fechamento. Qualquer
+  # violação → exit 1 (com pipefail, a função falha) e nada é escrito.
+  lf "$MASTER" | awk -v hdr="$HEADER" '
+    NR==1 { if ($0 != "---") { print "ERRO: master sem frontmatter na linha 1" > "/dev/stderr"; exit 1 } print; next }
+    !done && $0=="---" { print; while ((getline l < hdr) > 0) { sub(/\r$/, "", l); print l }; close(hdr); done=1; next }
+    !done && $0 !~ /^([A-Za-z0-9_-]+:|[ \t]|$)/ { print "ERRO: frontmatter do master nao fecha antes da linha " NR ": " $0 > "/dev/stderr"; exit 1 }
+    { print }
+    END { if (!done) { print "ERRO: frontmatter do master sem fechamento ---" > "/dev/stderr"; exit 1 } }'
+}
+
+# sync_one <rótulo> <destino> <comando que imprime o conteúdo desejado>
+# Compara com CR normalizado; em --check só reporta; senão escreve via temporário
+# no mesmo diretório (rename atômico) e o trap limpa se algo falhar no meio.
+repo_changed=0; user_changed=0
+sync_one() {
   local label="$1" dest="$2"; shift 2
-  local tmp; tmp="$(mktemp)"
-  "$@" > "$tmp"
-  if [ -f "$dest" ] && cmp -s "$tmp" "$dest"; then
-    printf "%-30s ok (ja igual)\n" "$label"; rm -f "$tmp"; return
+  local tmp; tmp="$(mktemp "${TMPDIR:-/tmp}/sync-auto.XXXXXX")"; TMPFILES+=("$tmp")
+  # A chamada abaixo roda em contexto "testado por ||" (o chamador faz
+  # `sync_one ... || contador++`), onde `set -e` NÃO aborta: por isso o status é
+  # checado à mão e o script sai — nunca escrever conteúdo vazio/parcial no destino.
+  if ! "$@" > "$tmp" || [ ! -s "$tmp" ]; then
+    echo "ERRO: falha ao gerar conteúdo para $label ($dest); nada foi escrito." >&2
+    exit 1
+  fi
+  if [ -f "$dest" ] && cmp -s "$tmp" <(lf "$dest"); then
+    printf "%-32s ok (já igual)\n" "$label"; return 0
   fi
   if [ "$CHECK_ONLY" = 1 ]; then
-    printf "%-30s DIFERENTE (precisa sync)\n" "$label"; rm -f "$tmp"; changed=$((changed+1)); return
+    printf "%-32s DIFERENTE (precisa sync)\n" "$label"; return 1
   fi
   mkdir -p "$(dirname "$dest")"
   mv "$tmp" "$dest"
-  printf "%-30s ATUALIZADO\n" "$label"; changed=$((changed+1))
+  printf "%-32s ATUALIZADO\n" "$label"; return 1
 }
 
-build_user_cmd() { head -n 4 "$MASTER"; cat "$HEADER"; tail -n +5 "$MASTER"; }
+echo "master tooling/auto.md  md5(LF)=$(lf "$MASTER" | md5sum | cut -d' ' -f1)"
+echo
+for r in "${REPOS[@]}"; do
+  dest="$HOME_DIR/$r/.claude/commands/auto.md"
+  if [ ! -d "$HOME_DIR/$r/.claude/commands" ]; then
+    printf "%-32s SKIP (sem .claude/commands)\n" "$r"; continue
+  fi
+  sync_one "$r" "$dest" lf "$MASTER" || repo_changed=$((repo_changed+1))
+done
+
+if [ "$WITH_USER" = 1 ]; then
+  echo
+  sync_one "~/.claude/commands (code)" "$USER_CMD" build_user_cmd || user_changed=$((user_changed+1))
+  sync_one "~/.claude/skills (cowork)" "$USER_SKILL" lf "$COWORK" || user_changed=$((user_changed+1))
+  if [ -f "$LEGACY_SKILL" ] && grep -q "$COWORK_MARKER" "$LEGACY_SKILL"; then
+    if [ "$CHECK_ONLY" = 1 ]; then
+      printf "%-32s LEGADA (sombreia /auto; será removida no apply)\n" "~/.claude/skills/auto"
+    else
+      rm -f "$LEGACY_SKILL"; rmdir "$(dirname "$LEGACY_SKILL")" 2>/dev/null || true
+      printf "%-32s REMOVIDA (sombreava o comando /auto)\n" "~/.claude/skills/auto"
+    fi
+    user_changed=$((user_changed+1))
+  fi
+fi
 
 echo
-if [ -f "$HEADER" ]; then
-  sync_user "~/.claude/commands (code)" "$USER_CMD" build_user_cmd
-else
-  printf "%-30s SKIP (sem auto-user-header.md)\n" "~/.claude/commands (code)"
-fi
-if [ -f "$COWORK" ]; then
-  sync_user "~/.claude/skills (cowork)" "$USER_SKILL" cat "$COWORK"
-else
-  printf "%-30s SKIP (sem auto-cowork/SKILL.md)\n" "~/.claude/skills (cowork)"
-fi
-
-echo
+total=$((repo_changed+user_changed))
 if [ "$CHECK_ONLY" = 1 ]; then
-  echo "dry-run: $changed destino(s) precisariam de sync."
+  echo "dry-run: $total destino(s) precisariam de sync ($repo_changed repo(s), $user_changed de usuário)."
 else
-  echo "sync concluido: $changed destino(s) atualizado(s). Commit+push em cada repo e manual."
-  echo "Cowork: a copia em ~/.claude/skills nao instala no perfil da conta --"
-  echo "  empacote com skill-creator (package_skill) e clique 'Save skill' no card."
+  echo "sync concluído: $total destino(s) atualizado(s) ($repo_changed repo(s), $user_changed de usuário)."
+  [ "$repo_changed" -gt 0 ] && echo "Repos alterados: commit+push em cada um (branch + PR)."
+  [ "$WITH_USER" = 1 ] && echo "Cowork: a cópia em ~/.claude/skills/auto-cowork é local; para o perfil da conta, empacote com skill-creator e 'Save skill'."
 fi
+exit 0

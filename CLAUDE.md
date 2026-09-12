@@ -65,9 +65,16 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
 - **`auto.md`** — cópia-mestra do skill `/auto` da frota. Editar SEMPRE aqui e
   sincronizar para os repos (no PC do operador, que tem as pastas irmãs):
   ```bash
-  bash tooling/sync-auto-skill.sh --check   # dry-run: mostra o que difere
-  bash tooling/sync-auto-skill.sh           # aplica nos 8 repos (idempotente)
+  bash tooling/sync-auto-skill.sh --check          # dry-run: mostra o que difere
+  bash tooling/sync-auto-skill.sh                  # aplica nos 8 repos (idempotente, CR normalizado)
+  bash tooling/sync-auto-skill.sh --user           # + cópias de usuário: ~/.claude/commands/auto.md
+                                                   #   (master + cabeçalho de precedência) e
+                                                   #   ~/.claude/skills/auto-cowork/SKILL.md
+  bash tooling/tests/test_sync_auto_skill.sh       # testes do script (HOME falso, offline)
   ```
+  Sem `--user` o script não escreve fora dos repos. A skill do Cowork chama-se
+  `auto-cowork` de propósito: uma skill pessoal chamada `auto` sombreia o comando
+  `/auto` do terminal e o de cada repo.
 - **`doubleholo_signals.py`** — lado Python canônico da integração DoubleHolo
   (subcomandos `discover` e `ingest`). A nota `dh_score` (0-100) é calculada **só
   aqui**; `card-trader-scanner` e `pokemon-longterm-outlook` apenas **leem** o JSON

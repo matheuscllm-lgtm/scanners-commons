@@ -130,6 +130,26 @@ Regerar do clone quando quiser atualizar.
   (Customize → Plugins), se o catálogo oferecer. Não confirmado se aceita
   marketplace de terceiro.
 
+## ⏳ Pendências — retomar no PC do operador
+
+> Aberto em **2026-09-14**. A receita acima está mergeada; a instalação é
+> manual e **ainda não foi feita**. Qualquer sessão que retome no PC deve
+> lembrar disto e conduzir na ordem. Ao concluir, apagar esta seção (e o item
+> espelho em "Pendências vivas" do `CLAUDE.md` do repo Liga).
+
+1. Rodar `tooling/setup_claude_plugins.ps1` no PowerShell e conferir com
+   `claude plugin list` (3 plugins em scope `user`) e `headroom --version`.
+2. Task Observer: regerar o bundle (receita na seção acima), upload em
+   claude.ai → Settings → Capabilities → Skills, colar o bloco de ativação nas
+   **preferências pessoais do claude.ai** com workspace
+   `C:\Users\mathe\task-observer-workspace`. Validar numa sessão **nova**.
+3. Decidir o uso diário do Headroom (`headroom wrap claude`, com
+   `ANTHROPIC_TARGET_API_URL` apontando pro OmniRoute quando ele estiver
+   ligado). Lembrete: base URL custom desliga o `/rc`.
+4. Opcional: apagar no GitHub as branches já mergeadas
+   `claude/install-model-skills-mlx4u6` (Liga) e
+   `claude/plugins-claude-code-frota` (commons).
+
 ## Histórico
 
 - **2026-09-14** — documento criado a partir da seção 🔌 Plugins do `CLAUDE.md`

@@ -42,6 +42,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `04-GITHUB-ACTIONS.md` | workflows por scanner (scans só por dispatch manual) |
 | `05-MODELO-ENTREGA.md` | o formato padrão da tabela de entrega (estilo MYP) |
 | `06-AUTO-SKILL.md` | o que é o comando `/auto` e como manter as cópias em sincronia |
+| `07-PLUGINS-CLAUDE-CODE.md` | setup global do Claude Code (plugins × skills × proxies), o que vale no Cowork, script `tooling/setup_claude_plugins.ps1` |
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
 | `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (status: concluído 2026-07-18 — `op_scanner.py` mergeado no card-trader-scanner #58) |
 | `HANDOFF-CARDTRADER-FONTE-PRECO.md` | handoff da instabilidade da pokemontcg.io no CardTrader scanner + proposta `--provider tcgcsv` (status: ABERTO 2026-08-22 — decisão de caminho com o operador) |
@@ -83,6 +84,9 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
   SINAIS. Leitura premium = DOM-scraper JS (`~/doubleholo-scraper/`, PC do
   operador); harvest de token é bloqueado de propósito.
 - **`test_doubleholo_signals.py`** — testes do pipeline.
+- **`setup_claude_plugins.ps1`** — one-shot pro PC do operador: marketplaces +
+  plugins do Claude Code em scope `user` (valem em todos os repos) + Headroom +
+  instruções do Task Observer. Manual em `07-PLUGINS-CLAUDE-CODE.md`.
 - **`radar-tcg/`** — Radar·TCG (PR #7): painel visual interativo (um único
   `index.html`, sem dependência externa) dos scanners MYP + CardTrader. Monta o
   comando de scan a partir dos 6 grupos canônicos de cada scanner (verbatim das

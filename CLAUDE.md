@@ -1,3 +1,9 @@
+<!-- FLEET:ESTILO-RESPOSTA v1 (2026-09-14) — cópia-mestra: scanners-commons/08-ESTILO-RESPOSTA.md. Editar LÁ e replicar; não divergir nesta cópia. -->
+> **Estilo de resposta obrigatório (operador, 2026-09-14): CONCISO — teto de 200 palavras.**
+> Toda resposta no chat, nesta ordem: **1) Objetivo** — 1 linha do que foi pedido · **2) O que foi feito** — bullets curtos, cada um com o *porquê* da decisão · **3) Dependências/pendências** — o que falta, o que bloqueia, de quem depende (`nenhuma` quando não houver).
+> O teto conta **só prosa**. **Fora do teto** (nunca resumir, cortar nem "amostrar" pra caber): a tabela de entrega gerada pela ferramenta do repo (colada VERBATIM), blocos de comando/código, saída de teste colada como prova e artefato canônico do repo (brief, relatório, análise).
+> Sem preâmbulo, sem repetir o pedido, sem recapitular o que já foi dito. Não cabe em 200 palavras? Entregue o essencial dentro do teto e ofereça o detalhe ("quer o detalhe de X?") — nunca estoure em silêncio.
+
 > **Regra vigente de entrega:** [DELIVERY_CHAT.md](DELIVERY_CHAT.md). Resultados somente no chat, referência clicável e coleta nova por solicitação; substitui orientações antigas de entrega via GitHub ou preços reutilizados.
 
 # CLAUDE.md — scanners-commons
@@ -43,6 +49,7 @@ se roda scan nenhum; roda-se documentação e o tooling compartilhado.
 | `05-MODELO-ENTREGA.md` | o formato padrão da tabela de entrega (estilo MYP) |
 | `06-AUTO-SKILL.md` | o que é o comando `/auto` e como manter as cópias em sincronia |
 | `07-PLUGINS-CLAUDE-CODE.md` | setup global do Claude Code (plugins × skills × proxies), o que vale no Cowork, script `tooling/setup_claude_plugins.ps1` |
+| `08-ESTILO-RESPOSTA.md` | **estilo de resposta da frota**: conciso, teto de 200 palavras, estrutura Objetivo → O que foi feito → Dependências; o que fica fora do teto (tabela de entrega verbatim, comandos, prova de teste) |
 | `HANDOFF-DOUBLEHOLO.md` | handoff da integração DoubleHolo (status: concluído 2026-06-28) |
 | `HANDOFF-ONEPIECE-SCANNER.md` | handoff do scanner One Piece CT→TCGplayer (status: concluído 2026-07-18 — `op_scanner.py` mergeado no card-trader-scanner #58) |
 | `HANDOFF-CARDTRADER-FONTE-PRECO.md` | handoff da instabilidade da pokemontcg.io no CardTrader scanner + proposta `--provider tcgcsv` (status: ABERTO 2026-08-22 — decisão de caminho com o operador) |

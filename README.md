@@ -28,6 +28,7 @@ Termos rápidos (o operador é médico, não programador):
 | [`05-MODELO-ENTREGA.md`](05-MODELO-ENTREGA.md) | O formato padrão da tabela de entrega (estilo MYP) |
 | [`06-AUTO-SKILL.md`](06-AUTO-SKILL.md) | O comando `/auto` (modo autônomo), fonte-mestra `tooling/auto.md` e o script de sync |
 | [`07-PLUGINS-CLAUDE-CODE.md`](07-PLUGINS-CLAUDE-CODE.md) | Plugins, skills e proxies do Claude Code: o que vale em todos os repos e no Cowork, os 5 do reel, script `tooling/setup_claude_plugins.ps1` |
+| [`08-ESTILO-RESPOSTA.md`](08-ESTILO-RESPOSTA.md) | **Estilo de resposta da frota**: conciso, teto de 200 palavras, estrutura Objetivo → O que foi feito → Dependências (e o que fica fora do teto) |
 
 ---
 

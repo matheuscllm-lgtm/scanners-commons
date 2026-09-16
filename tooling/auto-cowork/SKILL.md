@@ -14,7 +14,7 @@ description: >-
 # `/auto` no Cowork — modo autônomo da frota
 
 O contrato canônico deste modo tem ~370 linhas e vive em **`tooling/auto.md` do
-repo `matheuscllm-lgtm/scanners-commons`** (privado). Ele é a fonte única: o
+repo `matheuscllm-lgtm/scanners-commons`** (público). Ele é a fonte única: o
 terminal distribui cópias dele para os repos da frota pelo
 `tooling/sync-auto-skill.sh`. Esta skill existe porque o Cowork trabalha com
 skills, não com comandos de barra, e porque parte do contrato pressupõe terminal.

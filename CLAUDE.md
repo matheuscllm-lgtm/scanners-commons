@@ -11,7 +11,7 @@
 Instruções para qualquer sessão Claude Code (local ou nuvem) que trabalhe neste repo.
 
 **O que é isto, em uma frase:** o **manual da frota** de scanners de arbitragem de
-cartas Pokémon (repo **privado**) — o ponto único de consulta do que se repete entre
+cartas Pokémon (repo **público**) — o ponto único de consulta do que se repete entre
 os scanners: erros comuns, referências de preço, chaves de API, GitHub Actions,
 modelo de entrega e a cópia-mestra do skill `/auto`. **Não é um scanner** — aqui não
 se roda scan nenhum; roda-se documentação e o tooling compartilhado.
@@ -118,5 +118,5 @@ cd tooling && python -m pytest test_doubleholo_signals.py -q   # 14 testes, offl
   histórico tem commits diretos de docs pequenos no `master`, mas prefira PR.
 - **Nunca versionar VALOR de chave.** Este manual fala *sobre* as chaves
   (`03-CHAVES-API.md`) — nomes, onde moram, como setar sem BOM — e jamais contém
-  um valor. Repo é privado, mas a regra vale igual.
+  um valor. O repo é **público**: qualquer valor commitado vaza.
 - Ao registrar decisão nova do operador, sempre com **data** (padrão da frota).

@@ -92,6 +92,26 @@ O bundle **não é versionado** em nenhum repo da frota (conteúdo de terceiro,
 CC BY 4.0; os repos de scanner são públicos e minimalistas de propósito).
 Regerar do clone quando quiser atualizar.
 
+### `grill-me` (skill da frota) — upload
+
+Skill própria, cópia-mestra versionada em `tooling/grill-me/SKILL.md`: faz o
+Claude te entrevistar (uma pergunta por vez) até a decisão fechar, antes de
+executar. Empacotar e subir:
+
+```bash
+python3 -m scripts.package_skill tooling/grill-me   # a partir da pasta da skill-creator
+# → grill-me.skill  (é um zip com grill-me/SKILL.md dentro)
+```
+
+Upload em claude.ai → Settings → Capabilities → Skills. Aí vale em **tudo**
+(chat, Cowork, Claude Code, inclusive sessão remota) — mesmo canal do Task
+Observer, pelo mesmo motivo da regra de ouro acima: skill sincroniza, plugin não.
+
+Diferente do Task Observer, **não precisa de bloco de ativação**: ela dispara
+pela própria descrição quando você pede "me grelha" / "me faz perguntas" /
+"me ajuda a decidir". O `.skill` não é versionado (é artefato gerável); a fonte
+de verdade é o `SKILL.md` deste repo — editou aqui, reempacota e sobe de novo.
+
 ## Headroom + OmniRoute: encadeiam (Headroom na frente, OmniRoute atrás)
 
 - `headroom wrap claude` seta `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` sozinho

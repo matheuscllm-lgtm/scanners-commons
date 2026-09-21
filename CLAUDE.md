@@ -104,6 +104,12 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
   skills `scan-myp` / `/scan`), convertendo sozinho a convenção de threshold
   (inteiro no MYP, fração no CardTrader), e importa/filtra o resultado de um scan
   já rodado. Ver `tooling/radar-tcg/README.md`.
+- **`grill-me/`** — skill `grill-me`: interrogatório socrático (uma pergunta por
+  vez) que transforma ideia vaga em decisão fechada **antes** de executar.
+  Entrega clareza (decisão + premissas + o que ficou em aberto), não doc nem
+  prompt — a fronteira com `doc-coauthoring` e `prompt-master-tcg` está na
+  própria descrição da skill. Cópia-mestra aqui; instalação global = upload do
+  `.skill` em claude.ai (receita no `07-PLUGINS-CLAUDE-CODE.md`).
 
 ## Testes
 

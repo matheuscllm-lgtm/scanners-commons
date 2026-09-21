@@ -142,6 +142,41 @@ A invocação explícita que se queria já existe: **chame a skill pelo nome**
 O `/auto` continua sendo command porque é o contrário: ele tem variação por
 repo e precisa existir em clone limpo, sem depender da conta do claude.ai.
 
+### `grill-to-prompt` (skill da frota) — o pipeline `grill-me` → `prompt-master-tcg`
+
+Skill de **cola**, cópia-mestra em `tooling/grill-to-prompt/SKILL.md`
+(decisão 2026-09-21): encadeia, na mesma conversa, a entrevista socrática da
+`grill-me` e a compilação em prompt da `prompt-master-tcg`. Ela **não copia
+nem reescreve** o método de nenhuma das duas — carrega cada uma na sua fase e
+fixa só o contrato de passagem: ordem fixa (grelhar → compilar, porque a
+`prompt-master-tcg` faz no máximo 3 perguntas e congela o resto como suposição
+dentro do prompt), triagem que pula a entrevista quando ferramenta + formato +
+critério de sucesso já estão claros, fechamento com a linha extra
+`Compilar para:`, checkpoint de um turno antes de compilar, **zero perguntas**
+na compilação (o orçamento foi gasto na entrevista; `Em aberto` vira
+`[PLACEHOLDER]`, nunca fato), mapa linha-a-linha fechamento → prompt, e bloco
+de contexto TCG **só** na frente detectada (fora de TCG, nenhum).
+
+Por que uma terceira skill em vez de editar a `grill-me`: as duas skills-mãe
+continuam valendo sozinhas (quem quer só clareza, ou já tem o pedido fechado,
+não deve pagar o pipeline); e a `prompt-master-tcg` não é versionada nesta
+frota — é skill da conta. A cola depende das **duas instaladas**; se uma
+faltar, a skill avisa e para, não improvisa.
+
+Empacotar e subir, mesmo canal da `grill-me`:
+
+```bash
+python3 -m scripts.package_skill tooling/grill-to-prompt   # a partir da pasta da skill-creator
+# → grill-to-prompt.skill  (zip com grill-to-prompt/SKILL.md dentro)
+```
+
+Upload em claude.ai → Settings → Capabilities → Skills. Vale o mesmo aviso
+da `grill-me`: skill de conversa dispara pouco sozinha — **invoque pelo nome**
+("usa a skill `grill-to-prompt`" ou `/grill-to-prompt`). O frontmatter de
+todas as skills versionadas em `tooling/` é travado por
+`tooling/tests/test_skill_frontmatter.sh` (mesmas regras que o
+`package_skill` barra no upload).
+
 ## Headroom + OmniRoute: encadeiam (Headroom na frente, OmniRoute atrás)
 
 - `headroom wrap claude` seta `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` sozinho

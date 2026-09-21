@@ -107,10 +107,26 @@ Upload em claude.ai → Settings → Capabilities → Skills. Aí vale em **tudo
 (chat, Cowork, Claude Code, inclusive sessão remota) — mesmo canal do Task
 Observer, pelo mesmo motivo da regra de ouro acima: skill sincroniza, plugin não.
 
-Diferente do Task Observer, **não precisa de bloco de ativação**: ela dispara
-pela própria descrição quando você pede "me grelha" / "me faz perguntas" /
-"me ajuda a decidir". O `.skill` não é versionado (é artefato gerável); a fonte
-de verdade é o `SKILL.md` deste repo — editou aqui, reempacota e sobe de novo.
+O `.skill` não é versionado (é artefato gerável); a fonte de verdade é o
+`SKILL.md` deste repo — editou aqui, reempacota e sobe de novo.
+
+⚠️ **Medido em 2026-09-21 — skill de conversa dispara pouco sozinha.** Eval de
+triggering (`scripts/run_eval` do `skill-creator`, `claude -p`, 14 queries
+reais) em **3 redações diferentes** da descrição (a 3ª nem era publicável: passou do
+limite de 1024 caracteres da descrição, que o `package_skill` barra): os
+negativos ficaram sempre
+em 0% (nenhum falso positivo), mas os positivos travaram em **~18%** nas três —
+não é redação ruim, é teto. A causa apareceu numa sonda manual: pedido do tipo
+"me grelha aí…" o Claude **atende direto e bem** (uma pergunta por vez, sem
+executar nada) *sem abrir a skill* — ele só consulta skill para o que não
+consegue fazer sozinho, e conversa ele consegue. O que se perde sem carregar o
+corpo é o método (teste da bifurcação, lentes, critério de parada, formato do
+fechamento).
+
+Consequência prática, que vale para qualquer skill de conversa da frota: quando
+o método importa, **invoque explicitamente** ("usa a skill `grill-me`" ou um
+`/grill-me` como command) em vez de contar com o disparo automático — é a mesma
+razão pela qual `/auto` e `/scan` são **commands**, não skills model-invoked.
 
 ## Headroom + OmniRoute: encadeiam (Headroom na frente, OmniRoute atrás)
 

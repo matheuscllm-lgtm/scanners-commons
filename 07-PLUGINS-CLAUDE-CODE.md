@@ -124,9 +124,23 @@ corpo é o método (teste da bifurcação, lentes, critério de parada, formato 
 fechamento).
 
 Consequência prática, que vale para qualquer skill de conversa da frota: quando
-o método importa, **invoque explicitamente** ("usa a skill `grill-me`" ou um
-`/grill-me` como command) em vez de contar com o disparo automático — é a mesma
-razão pela qual `/auto` e `/scan` são **commands**, não skills model-invoked.
+o método importa, **invoque explicitamente** em vez de contar com o disparo
+automático — é a mesma razão pela qual `/auto` e `/scan` são **commands**, não
+skills model-invoked.
+
+**E por que a `grill-me` NÃO virou um command da frota (decisão 2026-09-21).**
+A ideia natural seria distribuí-la pelos repos como `/grill-me`, junto do
+`/auto`, via `tooling/sync-auto-skill.sh`. Não vale: a skill já está instalada
+na conta **com o nome `grill-me`** (confirmado no catálogo de skills do
+claude.ai), e skill pessoal **sombreia** o command de mesmo nome — é
+exatamente o motivo pelo qual a cópia Cowork do `/auto` se chama
+`auto-cowork` e não `auto`. Ou seja: um `/grill-me` versionado seria uma
+segunda cópia do mesmo texto, sombreada pela primeira e livre para divergir.
+A invocação explícita que se queria já existe: **chame a skill pelo nome**
+("usa a skill `grill-me`" ou `/grill-me`, que resolve nela).
+
+O `/auto` continua sendo command porque é o contrário: ele tem variação por
+repo e precisa existir em clone limpo, sem depender da conta do claude.ai.
 
 ## Headroom + OmniRoute: encadeiam (Headroom na frente, OmniRoute atrás)
 

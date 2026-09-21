@@ -110,11 +110,21 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
   prompt — a fronteira com `doc-coauthoring` e `prompt-master-tcg` está na
   própria descrição da skill. Cópia-mestra aqui; instalação global = upload do
   `.skill` em claude.ai (receita no `07-PLUGINS-CLAUDE-CODE.md`).
+- **`grill-to-prompt/`** — skill de **cola** (2026-09-21): encadeia
+  `grill-me` → `prompt-master-tcg` na mesma conversa. Não reescreve o método
+  de nenhuma das duas — carrega cada uma na sua fase e fixa o contrato de
+  passagem (ordem fixa, triagem que pula a entrevista quando o pedido já está
+  fechado, fechamento com linha `Compilar para:`, zero perguntas na
+  compilação, `Em aberto` vira `[PLACEHOLDER]`, bloco TCG só na frente
+  detectada). Depende das duas skills instaladas na conta. Empacotar/subir
+  igual à `grill-me` (receita no `07-PLUGINS-CLAUDE-CODE.md`).
 
 ## Testes
 
 ```bash
 cd tooling && python -m pytest test_doubleholo_signals.py -q   # 14 testes, offline
+bash tooling/tests/test_sync_auto_skill.sh                     # sync do /auto (HOME falso)
+bash tooling/tests/test_skill_frontmatter.sh                   # frontmatter de tooling/*/SKILL.md (regras do upload)
 ```
 
 ## Fluxo de desenvolvimento e segurança

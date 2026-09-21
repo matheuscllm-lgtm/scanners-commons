@@ -1,18 +1,20 @@
 ---
 name: grill-me
 description: >-
-  Interrogatório socrático — uma pergunta por vez — para transformar uma ideia
-  vaga numa decisão clara, ANTES de executar qualquer coisa. Use sempre que o
-  operador disser "me grelha", "grill me", "me faz perguntas", "me entrevista",
-  "me questiona", "pergunta o que faltar", "me ajuda a pensar / a decidir",
-  "não sei bem o que eu quero", "tô em dúvida entre X e Y", "pensa comigo",
-  "o que você precisa saber pra fazer isso?" — e também quando ele descrever um
-  plano grande com várias lacunas e pedir sua opinião antes de começar. O
-  produto final é CLAREZA (decisão + premissas + o que ficou em aberto), não um
-  documento, não um prompt e não a tarefa executada. Se o produto final for um
-  prompt pra colar em outra ferramenta, use `prompt-master-tcg`; se for um doc
-  estruturado pra outras pessoas lerem, use `doc-coauthoring`; se for rodar um
-  scanner, use a skill do scanner.
+  Entrevista socrática: fazer UMA pergunta por vez ao operador até a ideia vaga
+  virar decisão fechada, antes de executar qualquer coisa. Acione quando ele
+  disser "me grelha", "grill me", "me entrevista", "me faz as perguntas que
+  precisar", "pergunta o que faltar", "me questiona", "pensa comigo", "me ajuda
+  a decidir", "me ajuda a pensar", "tô em dúvida entre X e Y", "vale a pena eu
+  fazer X ou continuar com Y?", "não sei bem o que eu quero", "tenho uma ideia
+  meio crua", "não escreve nada ainda" — e sempre que ele expuser uma decisão
+  ainda não tomada e pedir que você pergunte, questione, ou ache o buraco no
+  raciocínio dele. Acione MESMO que o pedido pareça uma pergunta que você
+  conseguiria responder sozinho: o valor está justamente em não responder
+  direto, e sim em extrair dele o que decide a questão. Entrega clareza
+  (decisão + premissas + o que ficou em aberto) — não um documento
+  (`doc-coauthoring`), não um prompt (`prompt-master-tcg`) e não a tarefa
+  executada (skills de scan).
 ---
 
 # Grill me

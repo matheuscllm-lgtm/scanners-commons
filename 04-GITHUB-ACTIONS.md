@@ -2,7 +2,7 @@
 
 GitHub Actions = robôs que rodam na nuvem. Dois tipos aqui: **`tests`/`CI`** (rodam os testes a cada mudança, pra avisar se quebrou) e **scans** (rodam o scanner de fato).
 
-> ✅ **Todos os 6 repos são PÚBLICOS desde 2026-06-19** → Actions **grátis** (repo público não consome cota). O bloqueio antigo por billing (que aparecia como "falha" fantasma) não deve mais ocorrer. Ver erro nº3 em [`01-ERROS-COMUNS.md`](01-ERROS-COMUNS.md).
+> ✅ **Todos os 6 repos são PÚBLICOS desde 2026-06-19** → Actions **grátis** (repo público não consome cota). **Exceção (2026-10-17): `ptbr-sealed-scanner` é PRIVADO** — o `tests` dele consome os 2.000 min/mês grátis da conta (suite pequena, ~1 min/run); se faltar cota, rode `python -m pytest -q` local. O bloqueio antigo por billing (que aparecia como "falha" fantasma) não deve mais ocorrer. Ver erro nº3 em [`01-ERROS-COMUNS.md`](01-ERROS-COMUNS.md).
 >
 > Os scans rodam por **disparo manual** (`workflow_dispatch`) — os crons automáticos foram removidos pra controlar custo/ruído. Disparar pela aba **Actions** do GitHub, ou: `gh workflow run <arquivo>.yml --repo matheuscllm-lgtm/<repo>`.
 
@@ -62,3 +62,9 @@ gh run list --repo matheuscllm-lgtm/<repo> --limit 6     # últimas execuções 
 gh run view <run-id> --repo matheuscllm-lgtm/<repo> --log-failed   # ver por que falhou
 ```
 Se um run aparecer "failure", confira **primeiro** se a mensagem é de billing (conta) e não de código — ver erro nº3.
+
+## Selados PT-BR — `ptbr-sealed-scanner` (privado)
+| Workflow | Tipo | Quando |
+|---|---|---|
+| `tests` | testes | push/PR no main |
+- **Sem scan na nuvem**: a Liga bloqueia IP de datacenter no Cloudflare e a coleta exige Chrome com janela visível no PC do operador. Referências (eBay Browse API + tcgcsv) também são reconstruídas localmente antes de cada scan.

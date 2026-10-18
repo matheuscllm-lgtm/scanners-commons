@@ -33,7 +33,7 @@ Como são 8 cópias, elas **derivam** com o tempo se a gente edita uma a uma (j�
 aconteceu: o Selados ficou pra trás, sem metade do contrato). Pra resolver:
 
 - A **versão oficial** fica aqui, em `tooling/auto.md`.
-- O script `tooling/sync-auto-skill.sh` **copia a oficial pros 8 repos** de uma
+- O script `tooling/sync-auto-skill.sh` **copia a oficial pros 9 repos** de uma
   vez. Depois é só commitar/pushar em cada um.
 - Com `--user`, ele também monta as **cópias de usuário** fora dos repos, no seu
   PC: `~/.claude/commands/auto.md` (a oficial + um cabeçalho dizendo "o `auto.md`

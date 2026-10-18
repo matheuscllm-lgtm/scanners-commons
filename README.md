@@ -42,6 +42,7 @@ Termos rápidos (o operador é médico, não programador):
 | **COMC** | `scanner-comc` | `matheuscllm-lgtm/scanner-comc` | COMC (US, US$) | **tcgcsv.com** (market→mid→low) | `FIRECRAWL_API_KEY` (usada por qualquer run no fetch-mode default `firecrawl`; só `--fetch-mode playwright` dispensa) |
 | **eBay** | `ebay-arbitrage-scanner` | `matheuscllm-lgtm/ebay-arbitrage-scanner` | eBay (US, US$) | **PriceCharting** (raw + graded) | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` |
 | **Selados** | `sealed-arbitrage-scanner` | `matheuscllm-lgtm/sealed-scanner` | Liga / OLX / Amazon BR / ML | **TCGplayer US** (selado) | `FIRECRAWL_API_KEY` |
+| **Selados PT-BR** | `ptbr-sealed-scanner` | `matheuscllm-lgtm/ptbr-sealed-scanner` (privado) | Liga Pokémon (produtos em **português**) | **eBay US menor BIN ativo, vendedor EUA** (classifica; TCGplayer não lista PT-BR) · gêmeo EN TCGplayer informativo · vendidos = só liquidez | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` |
 
 > A chave **`POKEMONTCG_API_KEY`** é a mesma pra todos (valor gerenciado nas variáveis de ambiente do Windows e nos secrets do GitHub — **o valor não é versionado**; ver [`03-CHAVES-API.md`](03-CHAVES-API.md) pra conferir/setar).
 

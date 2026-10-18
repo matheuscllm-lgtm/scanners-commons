@@ -41,6 +41,7 @@ REPOS=(
   liga-pokemon-scanner
   myp-arbitrage-scanner
   pokemon-longterm-outlook
+  ptbr-sealed-scanner
   scanner-comc
   sealed-arbitrage-scanner
 )

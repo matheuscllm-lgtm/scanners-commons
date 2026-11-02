@@ -177,6 +177,52 @@ todas as skills versionadas em `tooling/` é travado por
 `tooling/tests/test_skill_frontmatter.sh` (mesmas regras que o
 `package_skill` barra no upload).
 
+### `grafo-tarefa` (skill da frota) — tarefa repetível em etapas com portão
+
+Cópia-mestra em `tooling/grafo-tarefa/SKILL.md` (pendencias#31, 2026-11-02):
+o Claude define o "pronto" antes de começar, quebra a tarefa em nós (entrada,
+saída, checagem), faz em **código** todo passo de resposta única (juntar,
+contar, comparar preço) e só conclui quando cada portão passou com evidência.
+Deixa `graph.md` + `checks.md` para outra sessão repetir. Herda as regras da
+frota (nunca inventar preço, nunca recomendar compra, entrega pela ferramenta
+do repo). Usa os subagentes `rapido`/`padrao`/`profundo` (pendencias#11) se
+existirem; sem eles, roda com o subagente geral.
+
+Empacotar e subir, mesmo canal da `grill-me`:
+
+```bash
+python3 -m scripts.package_skill tooling/grafo-tarefa   # a partir da pasta da skill-creator
+# → grafo-tarefa.skill
+```
+
+Piloto planejado: scraper de população da PSA (depende do REA, abaixo, para
+achar o parâmetro de Pokémon do `GetSetItems`). Regra de manter: rodar a mesma
+tarefa uma vez sem o grafo e comparar tempo, consumo e erros — só fica se
+melhorar.
+
+## Triagem das ferramentas pedidas nas pendências (2026-11-02)
+
+Reels de out–nov/2026 trouxeram várias "skills". O canal decide onde cada uma
+vale (regra de ouro no topo); o veredito diz se vale para a frota.
+
+| Pendência | Ferramenta | Canal | Veredito |
+|---|---|---|---|
+| #31 | `grafo-tarefa` | skill da frota (upload claude.ai) | **Implementada** (`tooling/grafo-tarefa/`). Falta subir o `.skill` e o piloto |
+| #11 | subagentes `rapido`/`padrao`/`profundo` | arquivos em `~/.claude/agents/` (PC) | **Instalar** — script pronto na issue, risco zero, a `grafo-tarefa` usa |
+| #26 | `security-audit` (Cloudflare) | `npx skills add … --global` (PC) | **Instalar** — rodar 1× por repo, um de cada vez (gasta muito) |
+| #25 | REA | MCP via `npx rea-agents setup` (PC, Node 22+) | **Instalar** — achar endpoints JSON dos marketplaces e da PSA; sempre deslogado |
+| #24 | `/watch` | plugin + ffmpeg/yt-dlp (PC) | **Instalar** — apostila de restauração e reels sem pagar Apify |
+| #26 | Ponytail | plugin (PC) | **Testar sozinho** — reforça "antes de codar, ver se já existe" |
+| #26 | Superpowers | plugin oficial (PC) | **Só em construção grande** (painel de estoque); nunca junto com a `grafo-tarefa` |
+| #23 / #27 | Replica / Craft Anything | plugin / app alpha | **Escolher um** quando o painel de estoque começar; Craft Anything ainda é alpha |
+| #28 | Find Skills | `npx skills add` (PC) | **Opcional** — uso pontual por projeto, instalar sem `-g` |
+| #26 | pacote do Matt Pocock | plugin | **Não instalar o pacote** — a `grill-me` da conta já sincroniza pro Claude Code (`~/.claude/skills/synced/`, conferido em sessão remota 2026-11-02); duas `grill-me` competem. No máximo a `grill-with-docs` |
+| #26 | i-have-adhd | plugin | **Não instalar** — conflita com `08-ESTILO-RESPOSTA.md`, que já cobre |
+
+Ordem sugerida no PC, uma por vez, reiniciando o Claude Code entre elas:
+#11 → `security-audit` → REA → `/watch` → Ponytail. Os comandos exatos estão
+em cada issue do repo `pendencias`.
+
 ## Headroom + OmniRoute: encadeiam (Headroom na frente, OmniRoute atrás)
 
 - `headroom wrap claude` seta `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` sozinho
@@ -237,6 +283,8 @@ todas as skills versionadas em `tooling/` é travado por
 
 ## Histórico
 
+- **2026-11-02** — skill `grafo-tarefa` (pendencias#31) e triagem das
+  ferramentas das pendências #11 e #23–#28.
 - **2026-09-14** — documento criado a partir da seção 🔌 Plugins do `CLAUDE.md`
   do repo Liga (PR #55 lá), com os 5 do reel @99hud e as regras de canal
   verificadas nas docs oficiais do Claude Code.

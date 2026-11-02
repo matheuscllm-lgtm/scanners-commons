@@ -119,6 +119,12 @@ nome da **pasta local**. O `tooling/sync-auto-skill.sh` usa nomes de pasta local
   compilação, `Em aberto` vira `[PLACEHOLDER]`, bloco TCG só na frente
   detectada). Depende das duas skills instaladas na conta. Empacotar/subir
   igual à `grill-me` (receita no `07-PLUGINS-CLAUDE-CODE.md`).
+- **`grafo-tarefa/`** — skill (2026-11-02, pendencias#31): tarefa repetível
+  (rodada de scanners, scraper da PSA) como grafo de nós com checagem; "pronto"
+  definido antes, passo de resposta única vira código, portão só abre com
+  evidência, `graph.md` + `checks.md` para repetir. Empacotar/subir igual à
+  `grill-me`; triagem das demais ferramentas das pendências no
+  `07-PLUGINS-CLAUDE-CODE.md`.
 
 ## Testes
 
